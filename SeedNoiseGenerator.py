@@ -44,7 +44,7 @@ if __name__ == "__main__":
     gen = SeedNoiseGenerator(4)
     for x in range(width):
         for y in range(height):
-            value = gen.noise(x, y, octaves=8, persistence=0.5, lacunarity=2.0, scale=0.01)
+            value = gen.noise(x, y, octaves=1, persistence=0.5, lacunarity=2.0, scale=0.01)
             noise_map[x, y] = value
 
     plt.imshow(noise_map, cmap='gray')
