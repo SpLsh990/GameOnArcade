@@ -24,7 +24,7 @@ class MyGame(arcade.Window):
     def __init__(self, WIDTH, HEIGHT, SCREEN_TITLE):
         super().__init__(WIDTH, HEIGHT, SCREEN_TITLE)
         arcade.set_background_color(arcade.color.BLACK)
-        seed = 58  # randint(1, 1000) #1001
+        seed = 19 #randint(1, 1000) ##100158
         self.generator = SeedNoiseGenerator(seed)
         self.world = {}
         print(self.generator.get_seed())
@@ -78,14 +78,12 @@ class MyGame(arcade.Window):
                     'down-left': self.world[x - TILE_SIZE, y - TILE_SIZE],
                     'down-right': self.world[x + TILE_SIZE, y - TILE_SIZE],
                 }
-                if res['center'] != res['up-left'] and res['center'] != res['up'] and res['center'] != res['up-right']:
+                if res['center'] != res['up'] and res['center'] != res['down']:
                     if res['center'] != res['left'] and res['center'] != res['right']:
-                        if res['center'] != res['down-left'] and res['center'] != res['down'] and res['center'] != res[
-                            'down-right']:
-                            colors = list(res.values())[1:]
-                            while (40, 20, 30) in colors:
-                                colors.pop(colors.index((40, 20, 30)))
-                            self.world[x, y] = most_frequent_simple(colors)
+                        colors = list(res.values())[1:]
+                        while (40, 20, 30) in colors:
+                            colors.pop(colors.index((40, 20, 30)))
+                        self.world[x, y] = most_frequent_simple(colors)
 
     def on_draw(self):
         self.clear()
