@@ -5,18 +5,18 @@ from math import pi, e
 class SeedNoiseGenerator:
     def __init__(self, seed):
         self.seed = seed
-        self.offset_x = (seed * 12453) % 65536
-        self.offset_y = (seed * 78901) % 65536
 
-    def noise(self, x, y, octaves=4, persistence=0.5, lacunarity=2.0, scale=0.01):
+
+    def noise(self, x, y, octaves=4, persistence=0.5, lacunarity=2.0, scale=0.01, seed_offset=0):
         value = 0
         frequency = scale
         amplitude = 1.0
         max_value = 0
-
+        offset_x = ((self.seed + seed_offset) * 12453) % 65536
+        offset_y = ((self.seed + seed_offset) * 78901) % 65536
         for i in range(octaves):
-            nx = x * frequency + self.offset_x + i * 100 * e
-            ny = y * frequency + self.offset_y + i * 200 * pi
+            nx = x * frequency + offset_x + i * 100 * e
+            ny = y * frequency + offset_y + i * 200 * pi
 
             value += pnoise2(nx, ny) * amplitude
             max_value += amplitude
@@ -41,10 +41,10 @@ if __name__ == "__main__":
     width, height = 2 ** 9, 2 ** 9
     noise_map = np.zeros((height, width))
 
-    gen = SeedNoiseGenerator(4)
+    gen = SeedNoiseGenerator(58)
     for x in range(width):
         for y in range(height):
-            value = gen.noise(x, y, octaves=1, persistence=0.5, lacunarity=2.0, scale=0.01)
+            value = gen.noise(x, y, octaves=1, seed_offset=255)
             noise_map[x, y] = value
 
     plt.imshow(noise_map, cmap='gray')
