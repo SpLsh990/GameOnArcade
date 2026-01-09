@@ -6,8 +6,7 @@ class SeedNoiseGenerator:
     def __init__(self, seed):
         self.seed = seed
 
-
-    def noise(self, x, y, octaves=4, persistence=0.5, lacunarity=2.0, scale=0.01, seed_offset=0):
+    def noise(self, x, y, octaves=4, seed_offset=0, persistence=0.5, lacunarity=2.0, scale=0.01):
         value = 0
         frequency = scale
         amplitude = 1.0
@@ -41,10 +40,10 @@ if __name__ == "__main__":
     width, height = 2 ** 9, 2 ** 9
     noise_map = np.zeros((height, width))
 
-    gen = SeedNoiseGenerator(58)
+    gen = SeedNoiseGenerator(1001)
     for x in range(width):
         for y in range(height):
-            value = gen.noise(x, y, octaves=1, seed_offset=255)
+            value = gen.noise(x, y, octaves=1, seed_offset=1200)
             noise_map[x, y] = value
 
     plt.imshow(noise_map, cmap='gray')
