@@ -1,28 +1,15 @@
 import arcade
 from arcade.gui import UIManager, UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIMessageBox
 
-from newGameView import NewGameView
-from savesView import SavesView
-from background import BackgroundView
+from baseView import BaseView
 
 
-class SettingsView(arcade.View):
-    def __init__(self, view):
-        super().__init__()
-        self.view = view
-
-        self.background = BackgroundView(self.width, self.height)
-        self.backgrList = arcade.SpriteList()
-        self.backgrList.append(self.background)
-
-        self.manager = UIManager()
-        self.manager.enable()
-
+class SettingsView(BaseView):
+    def __init__(self, window):
+        super().__init__(window)
         self.create_widget()
 
     def create_widget(self):
-
-
         self.anchor = UIAnchorLayout()
         self.anchor.default_anchor_x = 'left'
         self.anchor.default_anchor_y = 'bottom'
@@ -53,20 +40,5 @@ class SettingsView(arcade.View):
 
         button_back.on_click = self.back_triggered
 
-    def on_draw(self):
-        self.clear()
-        self.backgrList.draw()
-        self.manager.draw()
-
-    def on_update(self, delta_time: float):
-        self.backgrList.update()
-        self.background.update_animation()
-
-    def on_resize(self, width: int, height: int):
-        super().on_resize(width, height)
-        self.background.resize(width, height)
-
     def back_triggered(self, arg):
-        self.window.show_view(self.view)
-        self.view.on_resize(self.width, self.height)
-        self.view.manager.enable()
+        self.window.show_view(self.window.menu_view)

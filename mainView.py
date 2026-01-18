@@ -1,29 +1,11 @@
 import arcade
 from arcade.gui import UIManager, UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIMessageBox
-
-from newGameView import NewGameView
-from savesView import SavesView
-from settingsView import SettingsView
-from background import BackgroundView
-
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
-SCREEN_TITLE = 'MainMenuTest'
+from baseView import BaseView
 
 
-# TODO
-#  Изменить положение кнопок(сделать его относительным),
-#  Добавить надписи на кнопки
-class MainMenuView(arcade.View):
-    def __init__(self):
-        super().__init__()
-        self.background = BackgroundView(self.width, self.height)
-        self.backgrList = arcade.SpriteList()
-        self.backgrList.append(self.background)
-
-        self.manager = UIManager()
-        self.manager.enable()
-
+class MainMenuView(BaseView):
+    def __init__(self, window):
+        super().__init__(window)
         self.create_widget()
 
     def create_widget(self):
@@ -73,7 +55,6 @@ class MainMenuView(arcade.View):
 
         self.left_hor_layout = UIBoxLayout(vertical=False, space_between=10)
 
-
         self.left_vert_layout.add(button_settings)
         self.left_vert_layout.add(vert_space)
 
@@ -97,39 +78,16 @@ class MainMenuView(arcade.View):
         button_exit.on_click = self.exit_triggered
         button_settings.on_click = self.settings_triggered
 
-    def on_draw(self):
-        self.clear()
-        self.backgrList.draw()
-        self.manager.draw()
-
-    def on_update(self, delta_time: float):
-        self.backgrList.update()
-        self.background.update_animation()
-
-    def on_resize(self, width: int, height: int):
-        super().on_resize(width, height)
-        self.background.resize(width, height)
-
     def new_game_triggered(self, arg):
-        new_game_view = NewGameView()
-        self.window.show_view(new_game_view)
-        self.manager.disable()
+        pass
+        self.window.show_view(self.window.new_game_view)
 
     def saves_triggered(self, arg):
-        saves_view = SavesView()
-        self.window.show_view(saves_view)
-        self.manager.disable()
+        pass
+        self.window.show_view(self.window.saves_view)
 
     def exit_triggered(self, arg):
         arcade.close_window()
 
     def settings_triggered(self, arg):
-        settings_view = SettingsView(self)
-        self.window.show_view(settings_view)
-        self.manager.disable()
-
-if __name__ == '__main__':
-    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, resizable=True)
-    menu_view = MainMenuView()
-    window.show_view(menu_view)
-    arcade.run()
+        self.window.show_view(self.window.settings_view)

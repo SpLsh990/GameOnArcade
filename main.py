@@ -7,9 +7,10 @@ from savesView import SavesView
 from settingsView import SettingsView
 from background import BackgroundView
 from gameView import GameView
+from mainView import MainMenuView
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 960
+SCREEN_HEIGHT = 720
 SCREEN_TITLE = "Миллион оттенков серого и синего"
 
 
@@ -23,16 +24,22 @@ class Window(arcade.Window):
 
         self.menu_view = MainMenuView(self)
         self.settings_view = SettingsView(self)
-        self.new_game_view = NewGameView(self)
-        self.saves_view = SavesView(self)
-        self.game_view = GameView(self)
+        #self.new_game_view = NewGameView(self)
+        #self.saves_view = SavesView(self)
+        #self.game_view = GameView(self)
+
+        self.show_view(self.menu_view)
 
     def on_draw(self):
         self.clear()
-        self.backgrList.draw()
+        self.backList.draw()
+        self._current_view.on_draw()
 
     def on_update(self, delta_time: float):
         self.background.update_animation(delta_time)
+
+        if self._current_view:
+            self._current_view.on_update(delta_time)
 
     def on_resize(self, width: int, height: int):
         super().on_resize(width, height)
@@ -43,11 +50,12 @@ class Window(arcade.Window):
             self.background.enable()
         else:
             self.background.disable()
-
+        if self._current_view:
+            self._current_view.on_hide()
         super().show_view(new_view)
-
+        self._current_view.on_show()
 
 
 if __name__ == "__main__":
-    window = Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, resizable=True)
+    window = Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, True)
     arcade.run()
