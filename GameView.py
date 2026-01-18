@@ -1,7 +1,7 @@
 import arcade
 from ground import World
 from random import randint
-
+from pauseView import PauseView
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -10,8 +10,10 @@ TILE_SIZE = 10
 COLS = SCREEN_WIDTH // TILE_SIZE
 ROWS = SCREEN_HEIGHT // TILE_SIZE
 
-class Game(arcade.View):
-    def __init__(self, seed=randint(1, 1000)):
+#TODO реализовать сохранения
+
+class GameView(arcade.View):
+    def __init__(self, seed=randint(1, 1000), **kwargs):
         super().__init__()
         arcade.set_background_color(arcade.color.BLACK)
         self.world = World(seed, ROWS, COLS, TILE_SIZE)
@@ -46,3 +48,8 @@ class Game(arcade.View):
             self.camera_zoom *= zoom_factor
         elif scroll_y < 0:
             self.camera_zoom /= zoom_factor
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.ESCAPE:
+            self.window.show_view(self.menu_view)
+            self.menu_view.manager.enable()

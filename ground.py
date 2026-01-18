@@ -1,4 +1,4 @@
-from SeedNoiseGenerator import SeedNoiseGenerator
+from seedNoiseGenerator import SeedNoiseGenerator
 
 
 def most_frequent_simple(lst):
@@ -29,7 +29,7 @@ class World:
                        'silver': (214, 235, 202)
                        }
         self.world = {}
-        print(self.generator.get_seed())
+        #print(self.generator.get_seed())
 
     def add_item(self, color, limit, octaves=4, seed_offset=0, persistence=0.5, lacunarity=2.0,
                  scale=0.01):
