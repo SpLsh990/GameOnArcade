@@ -2,20 +2,24 @@ import arcade
 from arcade import View
 from arcade.gui import UIManager, UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIMessageBox
 
+
+from background import BackgroundView
+from mainView import MainMenuView
+from settingsView import SettingsView
 from newGameView import NewGameView
 from savesView import SavesView
-from settingsView import SettingsView
-from background import BackgroundView
 from gameView import GameView
-from mainView import MainMenuView
+
+
+
 
 SCREEN_WIDTH = 960
 SCREEN_HEIGHT = 720
-SCREEN_TITLE = "Миллион оттенков серого и синего"
+SCREEN_TITLE = "Больше не миллион оттенков серого и синего"
 
 
 class Window(arcade.Window):
-    def __init__(self, width, height, title, resizable):
+    def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, resizable):
         super().__init__()
 
         self.background = BackgroundView(self.width, self.height)

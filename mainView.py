@@ -9,9 +9,17 @@ class MainMenuView(BaseView):
         self.create_widget()
 
     def create_widget(self):
-        button_normal = arcade.load_texture("sprites/button/button_normal.png")
-        button_active = arcade.load_texture("sprites/button/button_active.png")
-        button_triggered = arcade.load_texture("sprites/button/button_triggered.png")
+        button_new_game_normal = arcade.load_texture("sprites/button_new_game/new_game_normal.png")
+        button_new_game_active = arcade.load_texture("sprites/button_new_game/new_game_active.png")
+        button_new_game_triggered = arcade.load_texture("sprites/button_new_game/new_game_triggered.png")
+
+        button_saves_normal = arcade.load_texture('sprites/button_saves/saves_normal.png')
+        button_saves_active = arcade.load_texture('sprites/button_saves/saves_active.png')
+        button_saves_triggered = arcade.load_texture('sprites/button_saves/saves_triggered.png')
+
+        button_exit_normal = arcade.load_texture("sprites/button_exit/exit_normal.png")
+        button_exit_active = arcade.load_texture("sprites/button_exit/exit_active.png")
+        button_exit_triggered = arcade.load_texture("sprites/button_exit/exit_triggered.png")
 
         gear_normal = arcade.load_texture("sprites/gear/gear_normal.png")
         gear_active = arcade.load_texture("sprites/gear/gear_active.png")
@@ -21,20 +29,20 @@ class MainMenuView(BaseView):
         vert_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
         hor_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
 
-        button_new_game = UITextureButton(texture=button_normal,
-                                          texture_hovered=button_active,
-                                          texture_pressed=button_triggered,
-                                          scale=0.3)
+        button_new_game = UITextureButton(texture=button_new_game_normal,
+                                          texture_hovered=button_new_game_active,
+                                          texture_pressed=button_new_game_triggered,
+                                          scale=0.4)
 
-        button_saves = UITextureButton(texture=button_normal,
-                                       texture_hovered=button_active,
-                                       texture_pressed=button_triggered,
-                                       scale=0.3)
+        button_saves = UITextureButton(texture=button_saves_normal,
+                                       texture_hovered=button_saves_active,
+                                       texture_pressed=button_saves_triggered,
+                                       scale=0.4)
 
-        button_exit = UITextureButton(texture=button_normal,
-                                      texture_hovered=button_active,
-                                      texture_pressed=button_triggered,
-                                      scale=0.3)
+        button_exit = UITextureButton(texture=button_exit_normal,
+                                      texture_hovered=button_exit_active,
+                                      texture_pressed=button_exit_triggered,
+                                      scale=0.4)
 
         button_settings = UITextureButton(texture=gear_normal,
                                           texture_hovered=gear_active,
@@ -79,11 +87,9 @@ class MainMenuView(BaseView):
         button_settings.on_click = self.settings_triggered
 
     def new_game_triggered(self, arg):
-        pass
         self.window.show_view(self.window.new_game_view)
 
     def saves_triggered(self, arg):
-        pass
         self.window.show_view(self.window.saves_view)
 
     def exit_triggered(self, arg):

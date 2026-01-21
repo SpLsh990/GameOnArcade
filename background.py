@@ -11,7 +11,7 @@ class BackgroundView(arcade.Sprite):
         self.center_x = width // 2
         self.center_y = height // 2
         for i in range(60):
-            texture = arcade.load_texture(f'sprites/menu/{i}.png')
+            texture = arcade.load_texture(f'sprites/background/{i}.png')
             self.textures.append(texture)
 
         self.current_texture = 0
