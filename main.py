@@ -17,7 +17,7 @@ SCREEN_WIDTH = 960
 SCREEN_HEIGHT = 720
 SCREEN_TITLE = "Больше не миллион оттенков серого и синего"
 
-
+# TODO Сделать GUI вкладки SAVES, игровой GUI и реализовать механику сохранений
 class Window(arcade.Window):
     def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, resizable):
         super().__init__()
@@ -28,7 +28,7 @@ class Window(arcade.Window):
 
         self.menu_view = MainMenuView(self)
         self.settings_view = SettingsView(self)
-        #self.new_game_view = NewGameView(self)
+        self.new_game_view = NewGameView(self)
         #self.saves_view = SavesView(self)
         #self.game_view = GameView(self)
 
@@ -61,5 +61,5 @@ class Window(arcade.Window):
 
 
 if __name__ == "__main__":
-    window = Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, True)
+    window = Window(SCREEN_WIDTH, SCREEN_HEIGHT, "Больше не миллион оттенков серого и синего", True)
     arcade.run()

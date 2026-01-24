@@ -1,5 +1,5 @@
 import arcade
-from arcade.gui import UIManager, UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIMessageBox
+from arcade.gui import UIManager
 
 
 class BaseView(arcade.View):

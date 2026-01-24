@@ -1,6 +1,5 @@
 import arcade
-from arcade.gui import UIManager, UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIMessageBox, UISlider, UILabel
-
+from arcade.gui import UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIMessageBox, UISlider
 from baseView import BaseView
 
 
@@ -36,6 +35,9 @@ class SettingsView(BaseView):
         self.texture_minus = arcade.load_texture("sprites/signs/minus.png")
         self.texture_plus = arcade.load_texture("sprites/signs/plus.png")
 
+        self.texture_letter_F = arcade.load_texture("sprites/letters/F.png")
+        self.texture_letter_O = arcade.load_texture("sprites/letters/O.png")
+
         self.digits = {
             "0": arcade.load_texture("sprites/digits/0.png"),
             "1": arcade.load_texture("sprites/digits/1.png"),
@@ -57,17 +59,17 @@ class SettingsView(BaseView):
         self.lv_layout = UIBoxLayout(vertical=True, space_between=10)
         self.lh_layout = UIBoxLayout(vertical=False, space_between=10)
 
-        vert_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
-        hor_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
+        v_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
+        h_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
 
-        button_back = UITextureButton(texture=self.texture_back_normal,
+        self.button_back = UITextureButton(texture=self.texture_back_normal,
                                       texture_hovered=self.texture_back_active,
                                       texture_pressed=self.texture_back_triggered, scale=0.13)
 
-        self.lv_layout.add(button_back)
-        self.lv_layout.add(vert_space)
+        self.lv_layout.add(self.button_back)
+        self.lv_layout.add(v_space)
 
-        self.lh_layout.add(hor_space)
+        self.lh_layout.add(h_space)
         self.lh_layout.add(self.lv_layout)
 
         self.l_anchor.add(self.lh_layout)
@@ -92,8 +94,8 @@ class SettingsView(BaseView):
                                        texture_hovered=self.texture_apply_active,
                                        texture_pressed=self.texture_apply_triggered, scale=0.25)
         """
-        upcentral_space = UISpace(width=100, height=200, color=(0, 0, 0, 0))
-        downcentral_space = UISpace(width=100, height=200, color=(0, 0, 0, 0))
+        cu_space = UISpace(width=100, height=200, color=(0, 0, 0, 0))
+        cd_space = UISpace(width=100, height=200, color=(0, 0, 0, 0))
 
         self.music_slider = UISlider(width=300, height=50, min_value=0, max_value=100, value=self.music)
         self.sound_slider = UISlider(width=300, height=50, min_value=0, max_value=100, value=self.sound)
@@ -128,18 +130,18 @@ class SettingsView(BaseView):
         self.csound_layout.add(self.minus_sound)
         self.csound_layout.add(self.plus_sound)
 
-        self.cv_layout.add(upcentral_space)
+        self.cv_layout.add(cu_space)
         self.cv_layout.add(self.cmusic_layout)
         self.cv_layout.add(self.csound_layout)
-        self.cv_layout.add(downcentral_space)
-        #self.cv_layout.add(button_apply)
+        self.cv_layout.add(cd_space)
+        # self.cv_layout.add(button_apply)
 
         self.c_anchor.add(self.cv_layout)
 
         self.manager.add(self.c_anchor)
 
-        button_back.on_click = lambda event: self.back_triggered(event)
-        #button_apply.on_click = lambda event: self.apply_triggered(event)
+        self.button_back.on_click = lambda event: self.back_triggered(event)
+        # button_apply.on_click = lambda event: self.apply_triggered(event)
 
         self.button_music.on_click = lambda event: self.music_triggered(event)
         self.button_sound.on_click = lambda event: self.sound_triggered(event)
@@ -162,64 +164,74 @@ class SettingsView(BaseView):
     def music_triggered(self, event):
         self.bool_music = not self.bool_music
         self.change_texture_music()
+        self.change_digits_music()
 
     def sound_triggered(self, event):
         self.bool_sound = not self.bool_sound
         self.change_texture_sound()
+        self.change_digits_sound()
 
     def change_music(self, value):
-        self.bool_music = True
-        value = int(value.new_value)
-        self.music = value
+        self.music = int(value.new_value)
+        self.bool_music = True if self.music else False
         self.change_digits_music()
         self.change_texture_music()
 
     def change_sound(self, value):
-        self.bool_sound = True
-        value = int(value.new_value)
-        self.sound = value
+        self.sound = int(value.new_value)
+        self.bool_sound = True if self.sound else False
         self.change_digits_sound()
         self.change_texture_sound()
 
     def reduce_music(self, event):
-        self.bool_music = True
         self.music -= 1 if self.music - 1 >= 0 else 0
+        self.bool_music = True if self.music else False
         self.music_slider.value -= 1 if self.music_slider.value - 1 >= 0 else 0
         self.change_digits_music()
         self.change_texture_music()
 
     def increase_music(self, event):
-        self.bool_music = True
         self.music += 1 if self.music + 1 <= 100 else 0
+        self.bool_music = True if self.music else False
         self.music_slider.value += 1 if self.music_slider.value + 1 <= 100 else 0
         self.change_digits_music()
         self.change_texture_music()
 
     def reduce_sound(self, event):
-        self.bool_sound = True
         self.sound -= 1 if self.sound - 1 >= 0 else 0
+        self.bool_sound = True if self.sound else False
         self.sound_slider.value -= 1 if self.sound_slider.value - 1 >= 0 else 0
         self.change_digits_sound()
         self.change_texture_sound()
 
     def increase_sound(self, event):
-        self.bool_sound = True
         self.sound += 1 if self.sound + 1 <= 100 else 0
+        self.bool_sound = True if self.sound else False
         self.sound_slider.value += 1 if self.sound_slider.value + 1 <= 100 else 0
         self.change_digits_sound()
         self.change_texture_sound()
 
     def change_digits_music(self):
-        music = list(f"{self.music:03}")
-        self.set_texture(self.first_dig_music, self.digits[music[0]])
-        self.set_texture(self.second_dig_music, self.digits[music[1]])
-        self.set_texture(self.third_dig_music, self.digits[music[2]])
+        if self.bool_music:
+            music = list(f"{self.music:03}")
+            self.set_texture(self.first_dig_music, self.digits[music[0]])
+            self.set_texture(self.second_dig_music, self.digits[music[1]])
+            self.set_texture(self.third_dig_music, self.digits[music[2]])
+        else:
+            self.set_texture(self.first_dig_music, self.texture_letter_O)
+            self.set_texture(self.second_dig_music, self.texture_letter_F)
+            self.set_texture(self.third_dig_music, self.texture_letter_F)
 
     def change_digits_sound(self):
-        sound = list(str(f"{self.sound:03}"))
-        self.set_texture(self.first_dig_sound, self.digits[sound[0]])
-        self.set_texture(self.second_dig_sound, self.digits[sound[1]])
-        self.set_texture(self.third_dig_sound, self.digits[sound[2]])
+        if self.bool_sound:
+            sound = list(str(f"{self.sound:03}"))
+            self.set_texture(self.first_dig_sound, self.digits[sound[0]])
+            self.set_texture(self.second_dig_sound, self.digits[sound[1]])
+            self.set_texture(self.third_dig_sound, self.digits[sound[2]])
+        else:
+            self.set_texture(self.first_dig_sound, self.texture_letter_O)
+            self.set_texture(self.second_dig_sound, self.texture_letter_F)
+            self.set_texture(self.third_dig_sound, self.texture_letter_F)
 
     def change_texture_music(self):
         if self.bool_music:
