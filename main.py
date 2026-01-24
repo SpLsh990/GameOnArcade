@@ -8,7 +8,7 @@ from mainView import MainMenuView
 from settingsView import SettingsView
 from newGameView import NewGameView
 from savesView import SavesView
-from gameView import GameView
+from GameView import GameView
 
 
 
