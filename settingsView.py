@@ -53,12 +53,8 @@ class SettingsView(BaseView):
                                             texture_hovered=self.window.sprites['sound_a'],
                                             texture_pressed=self.window.sprites['sound_t'], scale=0.3)
 
-        """button_apply = UITextureButton(texture=self.window.sprites['apply_n'],
-                                       texture_hovered=self.window.sprites['apply_a'],
-                                       texture_pressed=self.window.sprites['apply_t'], scale=0.25)
-        """
-        cu_space = UISpace(width=100, height=200, color=(0, 0, 0, 0))
-        cd_space = UISpace(width=100, height=200, color=(0, 0, 0, 0))
+
+        c_space = UISpace(width=100, height=200, color=(0, 0, 0, 0))
 
         self.music_slider = UISlider(width=300, height=50, min_value=0, max_value=100, value=self.music)
         self.sound_slider = UISlider(width=300, height=50, min_value=0, max_value=100, value=self.sound)
@@ -83,19 +79,16 @@ class SettingsView(BaseView):
         self.csound_layout.add(self.second_dig_sound)
         self.csound_layout.add(self.third_dig_sound)
 
-        self.cv_layout.add(cu_space)
+        self.cv_layout.add(c_space)
         self.cv_layout.add(self.cmusic_layout)
         self.cv_layout.add(self.csound_layout)
-        self.cv_layout.add(cd_space)
-        # self.cv_layout.add(button_apply)
+        self.cv_layout.add(c_space)
 
         self.c_anchor.add(self.cv_layout)
 
         self.manager.add(self.c_anchor)
 
         self.button_back.on_click = lambda event: self.back_triggered(event)
-        # button_apply.on_click = lambda event: self.apply_triggered(event)
-
         self.button_music.on_click = lambda event: self.music_triggered(event)
         self.button_sound.on_click = lambda event: self.sound_triggered(event)
 
@@ -109,10 +102,11 @@ class SettingsView(BaseView):
         self.third_dig_sound.on_click = lambda event: self.increase_sound(event)
 
     def back_triggered(self, event):
-        self.window.show_view(self.window.menu_view)
+        if self.window.is_game:
+            self.window.show_view(self.window.pause_view)
+        else:
+            self.window.show_view(self.window.menu_view)
 
-    def apply_triggered(self):
-        pass
 
     def music_triggered(self, event):
         self.bool_music = not self.bool_music

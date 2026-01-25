@@ -6,7 +6,7 @@ from mainView import MainMenuView
 from settingsView import SettingsView
 from newGameView import NewGameView
 from savesView import SavesView
-from gameView import GameView
+from GameView import GameView
 from pauseView import PauseView
 
 SCREEN_WIDTH = 960
@@ -14,7 +14,7 @@ SCREEN_HEIGHT = 720
 SCREEN_TITLE = "АВАВААВАВАВАВАВАВА"
 
 
-# TODO Сделать игровой GUI и реализовать механику сохранений
+# TODO Сделать игровой GUI, исправить кучу костылей
 class Window(arcade.Window):
     def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, fullscreen, resizable):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, fullscreen, resizable, center_window=True)
@@ -30,8 +30,9 @@ class Window(arcade.Window):
         self.settings_view = SettingsView(self)
         self.new_game_view = NewGameView(self)
         self.saves_view = SavesView(self)
-        #self.pause_view = PauseView(self)
+        self.pause_view = PauseView(self)
 
+        self.is_game = False
         self.show_view(self.menu_view)
 
     def load_textures(self):
@@ -72,7 +73,9 @@ class Window(arcade.Window):
         self.sprites['settings_n'] = arcade.load_texture("sprites/buttons/button_settings/settings_normal.png")
         self.sprites['settings_a'] = arcade.load_texture("sprites/buttons/button_settings/settings_active.png")
         self.sprites['settings_t'] = arcade.load_texture("sprites/buttons/button_settings/settings_triggered.png")
-
+        self.sprites['continue_n'] = arcade.load_texture("sprites/buttons/button_continue/continue_normal.png")
+        self.sprites['continue_a'] = arcade.load_texture("sprites/buttons/button_continue/continue_active.png")
+        self.sprites['continue_t'] = arcade.load_texture("sprites/buttons/button_continue/continue_triggered.png")
 
 
     def on_draw(self):
@@ -102,5 +105,5 @@ class Window(arcade.Window):
 
 
 if __name__ == "__main__":
-    window = Window(SCREEN_WIDTH, SCREEN_HEIGHT, "Больше не миллион оттенков серого и синего", True, False)
+    window = Window(SCREEN_WIDTH, SCREEN_HEIGHT, "Больше не миллион оттенков серого и синего", False, False)
     arcade.run()

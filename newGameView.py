@@ -1,8 +1,9 @@
 import arcade
 
-from arcade.gui import UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIInputText, Surface
+from arcade.gui import UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIInputText, Surface, UIMessageBox
+from arcade.types import Color
 from baseView import BaseView
-from gameView import GameView
+from GameView import GameView
 from re import fullmatch
 
 
@@ -97,12 +98,26 @@ class NewGameView(BaseView):
             x_offset += 34
 
     def back_triggered(self, event):
+        self.input_name.text = ""
+        self.input_seed.text = ""
         self.window.show_view(self.window.menu_view)
 
     def start_triggered(self, event):
         name = self.input_name.text
         seed = self.input_seed.text
+        self.input_name.text = ""
+        self.input_seed.text = ""
         if fullmatch(r'\S\w*\S', name):
             data = {'name': name, 'seed': seed}
-            self.window.gameview = GameView(self.window, data=data)
-            self.window.show_view(self.window.gameview)
+            self.window.game_view = GameView(self.window, data=data)
+            self.window.is_game = True
+            self.window.show_view(self.window.game_view)
+        else:
+            self.message_box = UIMessageBox(
+                width=300,
+                height=200,
+                message_text=(
+                    "Некорректное название мира"
+                ),
+                buttons=["OK"])
+            self.manager.add(self.message_box)

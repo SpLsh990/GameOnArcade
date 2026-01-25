@@ -23,14 +23,14 @@ class SaveSlot(UIInteractiveWidget):
             self.sprites[i] = arcade.load_texture(f"sprites/digits/{i}.png")
         for i in ['', '-', '+', '_']:
             self.sprites[i] = arcade.load_texture(f"sprites/signs/{i}.png")
-        self.sprites['slot_n'] = arcade.load_texture("sprites/button/button_normal.png")
-        self.sprites['slot_a'] = arcade.load_texture("sprites/button/button_selected.png")
+        self.sprites['slot_n'] = arcade.load_texture("sprites/buttons/button/button_normal.png")
+        self.sprites['slot_a'] = arcade.load_texture("sprites/buttons/button/button_selected.png")
 
     def update_data(self, data):
         self.data = data
-        self.name = self.data['name'].upper() if self.data else "EMPTY"
-        self.wave = self.data['wave'] if self.data else "0"
-        self.date = self.data['date'] if self.data else "00-00-0000"
+        self.name = self.data.get('name', 'empty').upper()
+        self.wave = self.data.get('wave', '0')
+        self.date = self.data.get('date', '0000-00-00')
 
     def on_click(self, event):
         super().on_click(event)

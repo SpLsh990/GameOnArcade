@@ -1,7 +1,9 @@
 import arcade
+import json
+from pathlib import Path
 from arcade.gui import UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIInteractiveWidget, Surface
 from baseView import BaseView
-from gameView import GameView
+from GameView import GameView
 from saveSlot import SaveSlot
 
 
@@ -80,21 +82,20 @@ class SavesView(BaseView):
     def delete_triggered(self, event):
         for save in range(len(self.saves) - 1, -1, -1):
             if self.saves[save].is_clicked():
+                file = Path(f'./saves/{self.saves[save].data['name']}.json')
+                file.unlink(missing_ok=True)
                 self.cv_layout.remove(self.saves[save])
                 self.saves.pop(save)
 
     def start_triggered(self, event):
-        clicked = 0
+        clicked = []
         for save in self.saves:
             if save.is_clicked():
                 clicked.append(save)
-        if len(clicked) == 0:
-            ...
-        elif len(clicked) > 1:
-            ...
-        else:
-            self.window.gameview = GameView(self.window, data=clicked[0].data)
-            self.window.show_view(self.window.gameview)
+        if len(clicked) == 1:
+            self.window.game_view = GameView(self.window, data=clicked[0].data)
+            self.window.is_game = True
+            self.window.show_view(self.window.game_view)
 
     def on_draw(self):
         super().on_draw()
@@ -108,3 +109,18 @@ class SavesView(BaseView):
             for save in self.saves:
                 if save not in self.cv_layout.children:
                     self.cv_layout.add(save)
+
+    def load_saves(self):
+        path = Path("./saves")
+        saves = list(path.glob("*.json"))
+        for save in range(len(saves)):
+            with open(saves[save].resolve(), "r", encoding='utf-8') as sv:
+                data = json.load(sv)
+            if len(self.saves) != 0:
+                for slot in self.saves:
+                    if data['name'] == slot.data['name']:
+                        break
+                    else:
+                        self.saves.append(SaveSlot(data=data, slot=save))
+            else:
+                self.saves.append(SaveSlot(data=data, slot=save))
