@@ -1,4 +1,4 @@
-from seedNoiseGenerator import SeedNoiseGenerator
+from SeedNoiseGenerator import SeedNoiseGenerator
 
 
 def most_frequent_simple(lst):

@@ -1,79 +1,38 @@
 import arcade
+from arcade import View
 from arcade.gui import UIManager, UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIMessageBox
+
 
 from background import BackgroundView
 from mainView import MainMenuView
 from settingsView import SettingsView
 from newGameView import NewGameView
 from savesView import SavesView
-from gameView import GameView
+from GameView import GameView
 from pauseView import PauseView
+
+
 
 SCREEN_WIDTH = 960
 SCREEN_HEIGHT = 720
-SCREEN_TITLE = "АВАВААВАВАВАВАВАВА"
+SCREEN_TITLE = "Больше не миллион оттенков серого и синего"
 
-
-# TODO Сделать игровой GUI и реализовать механику сохранений
+# TODO Сделать GUI вкладки SAVES, игровой GUI и реализовать механику сохранений
 class Window(arcade.Window):
-    def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, fullscreen, resizable):
-        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, fullscreen, resizable, center_window=True)
+    def __init__(self, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, resizable):
+        super().__init__()
 
         self.background = BackgroundView(self.width, self.height)
         self.backList = arcade.SpriteList()
         self.backList.append(self.background)
 
-        self.sprites = {}
-        self.load_textures()
-
         self.menu_view = MainMenuView(self)
         self.settings_view = SettingsView(self)
         self.new_game_view = NewGameView(self)
-        self.saves_view = SavesView(self)
-        #self.pause_view = PauseView(self)
+        #self.saves_view = SavesView(self)
+        #self.game_view = GameView(self)
 
         self.show_view(self.menu_view)
-
-    def load_textures(self):
-        for i in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
-            self.sprites[i] = arcade.load_texture(f"sprites/letters/{i}.png")
-        for i in "0123456789":
-            self.sprites[i] = arcade.load_texture(f"sprites/digits/{i}.png")
-        for i in ['', '-', '+', '_']:
-            self.sprites[i] = arcade.load_texture(f"sprites/signs/{i}.png")
-
-        self.sprites['new_game_n'] = arcade.load_texture("sprites/buttons/button_new_game/new_game_normal.png")
-        self.sprites['new_game_a'] = arcade.load_texture("sprites/buttons/button_new_game/new_game_active.png")
-        self.sprites['new_game_t'] = arcade.load_texture("sprites/buttons/button_new_game/new_game_triggered.png")
-        self.sprites['saves_n'] = arcade.load_texture('sprites/buttons/button_saves/saves_normal.png')
-        self.sprites['saves_a'] = arcade.load_texture('sprites/buttons/button_saves/saves_active.png')
-        self.sprites['saves_t'] = arcade.load_texture('sprites/buttons/button_saves/saves_triggered.png')
-        self.sprites['exit_n'] = arcade.load_texture("sprites/buttons/button_exit/exit_normal.png")
-        self.sprites['exit_a'] = arcade.load_texture("sprites/buttons/button_exit/exit_active.png")
-        self.sprites['exit_t'] = arcade.load_texture("sprites/buttons/button_exit/exit_triggered.png")
-        self.sprites['back_n'] = arcade.load_texture("sprites/buttons/button_back/back_normal.png")
-        self.sprites['back_a'] = arcade.load_texture("sprites/buttons/button_back/back_active.png")
-        self.sprites['back_t'] = arcade.load_texture("sprites/buttons/button_back/back_triggered.png")
-        self.sprites['apply_n'] = arcade.load_texture("sprites/buttons/button_apply/apply_normal.png")
-        self.sprites['apply_a'] = arcade.load_texture("sprites/buttons/button_apply/apply_active.png")
-        self.sprites['apply_t'] = arcade.load_texture("sprites/buttons/button_apply/apply_triggered.png")
-        self.sprites['music_n'] = arcade.load_texture("sprites/buttons/button_music/music_normal.png")
-        self.sprites['music_a'] = arcade.load_texture("sprites/buttons/button_music/music_active.png")
-        self.sprites['music_t'] = arcade.load_texture("sprites/buttons/button_music/music_triggered.png")
-        self.sprites['sound_n'] = arcade.load_texture("sprites/buttons/button_sound/sound_normal.png")
-        self.sprites['sound_a'] = arcade.load_texture("sprites/buttons/button_sound/sound_active.png")
-        self.sprites['sound_t'] = arcade.load_texture("sprites/buttons/button_sound/sound_triggered.png")
-        self.sprites['start_n'] = arcade.load_texture("sprites/buttons/button_start/start_normal.png")
-        self.sprites['start_a'] = arcade.load_texture("sprites/buttons/button_start/start_active.png")
-        self.sprites['start_t'] = arcade.load_texture("sprites/buttons/button_start/start_triggered.png")
-        self.sprites['delete_n'] = arcade.load_texture("sprites/buttons/button_delete/delete_normal.png")
-        self.sprites['delete_a'] = arcade.load_texture("sprites/buttons/button_delete/delete_active.png")
-        self.sprites['delete_t'] = arcade.load_texture("sprites/buttons/button_delete/delete_triggered.png")
-        self.sprites['settings_n'] = arcade.load_texture("sprites/buttons/button_settings/settings_normal.png")
-        self.sprites['settings_a'] = arcade.load_texture("sprites/buttons/button_settings/settings_active.png")
-        self.sprites['settings_t'] = arcade.load_texture("sprites/buttons/button_settings/settings_triggered.png")
-
-
 
     def on_draw(self):
         self.clear()
@@ -92,7 +51,7 @@ class Window(arcade.Window):
 
     def show_view(self, new_view):
         if not isinstance(new_view, GameView):
-            self.background.disable()
+            self.background.enable()
         else:
             self.background.disable()
         if self._current_view:
@@ -102,5 +61,5 @@ class Window(arcade.Window):
 
 
 if __name__ == "__main__":
-    window = Window(SCREEN_WIDTH, SCREEN_HEIGHT, "Больше не миллион оттенков серого и синего", True, False)
+    window = Window(SCREEN_WIDTH, SCREEN_HEIGHT, "Больше не миллион оттенков серого и синего", True)
     arcade.run()
