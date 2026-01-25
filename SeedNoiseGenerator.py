@@ -4,7 +4,7 @@ from math import pi, e
 
 class SeedNoiseGenerator:
     def __init__(self, seed):
-        self.seed = seed
+        self.seed = int(seed)
 
     def noise(self, x, y, octaves=4, seed_offset=0, persistence=0.5, lacunarity=2.0, scale=0.01):
         value = 0
@@ -27,9 +27,6 @@ class SeedNoiseGenerator:
             value = (value / max_value + 1) / 2
 
         return value
-
-    def get_seed(self):
-        return self.seed
 
 
 # Тестирование

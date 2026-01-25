@@ -1,28 +1,16 @@
 import arcade
 
-from arcade.gui import UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIInputText
+from arcade.gui import UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIInputText, Surface
 from baseView import BaseView
+from gameView import GameView
+from re import fullmatch
 
 
 class NewGameView(BaseView):
     def __init__(self, window):
         super().__init__(window)
 
-        self.load_textures()
         self.create_widget()
-
-    def load_textures(self):
-        self.texture_back_normal = arcade.load_texture("sprites/button_back/back_normal.png")
-        self.texture_back_active = arcade.load_texture("sprites/button_back/back_active.png")
-        self.texture_back_triggered = arcade.load_texture("sprites/button_back/back_triggered.png")
-
-        self.texture_start_normal = arcade.load_texture("sprites/button_start/start_normal.png")
-        self.texture_start_active = arcade.load_texture("sprites/button_start/start_active.png")
-        self.texture_start_triggered = arcade.load_texture("sprites/button_start/start_triggered.png")
-
-        self.texture_letter_S = arcade.load_texture("sprites/letters/S.png")
-        self.texture_letter_E = arcade.load_texture("sprites/letters/E.png")
-        self.texture_letter_D = arcade.load_texture("sprites/letters/D.png")
 
     def create_widget(self):
         self.l_anchor = UIAnchorLayout()
@@ -35,9 +23,9 @@ class NewGameView(BaseView):
         vert_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
         hor_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
 
-        self.button_back = UITextureButton(texture=self.texture_back_normal,
-                                           texture_hovered=self.texture_back_active,
-                                           texture_pressed=self.texture_back_triggered,
+        self.button_back = UITextureButton(texture=self.window.sprites['back_n'],
+                                           texture_hovered=self.window.sprites['back_a'],
+                                           texture_pressed=self.window.sprites['back_t'],
                                            scale=0.13)
 
         self.lv_layout.add(self.button_back)
@@ -49,47 +37,72 @@ class NewGameView(BaseView):
 
         self.c_anchor = UIAnchorLayout()
         self.cv_layout = UIBoxLayout(vertical=True, space_between=10)
+        self.sch_layout = UIBoxLayout(vertical=False, space_between=10)
         self.ch_layout = UIBoxLayout(vertical=False, space_between=10)
 
-        self.letter_S = UITextureButton(texture=self.texture_letter_S, scale=0.4)
-        self.fletter_E = UITextureButton(texture=self.texture_letter_E, scale=0.4)
-        self.sletter_E = UITextureButton(texture=self.texture_letter_E, scale=0.4)
-        self.letter_D = UITextureButton(texture=self.texture_letter_D, scale=0.4)
-
-        self.ch_layout.add(self.letter_S)
-        self.ch_layout.add(self.fletter_E)
-        self.ch_layout.add(self.sletter_E)
-        self.ch_layout.add(self.letter_D)
+        self.input_name = UIInputText(width=600, height=112 * 0.4, border_color=(255, 255, 0), border_width=5,
+                                      text_color=(255, 255, 0), font_size=20)
 
         self.input_seed = UIInputText(width=600, height=112 * 0.4, border_color=(255, 255, 0), border_width=5,
                                       text_color=(255, 255, 0), font_size=20)
 
-        self.button_start = UITextureButton(texture=self.texture_start_normal,
-                                            texture_hovered=self.texture_start_active,
-                                            texture_pressed=self.texture_start_triggered,
+        self.button_start = UITextureButton(texture=self.window.sprites['start_n'],
+                                            texture_hovered=self.window.sprites['start_a'],
+                                            texture_pressed=self.window.sprites['start_t'],
                                             scale=0.3)
 
         space = UISpace(width=100, height=100, color=(0, 0, 0, 0))
-        second_vert_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
+        sv_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
+        sh_space = UISpace(width=110, height=25, color=(0, 0, 0, 0))
 
-
-        self.ch_layout.add(self.input_seed)
+        self.ch_layout.add(sh_space)
+        self.ch_layout.add(self.input_name)
+        self.sch_layout.add(sh_space)
+        self.sch_layout.add(self.input_seed)
         self.cv_layout.add(self.ch_layout)
+        self.cv_layout.add(self.sch_layout)
         self.cv_layout.add(space)
         self.c_anchor.add(self.cv_layout)
         self.manager.add(self.c_anchor)
+
+        self.surface = Surface(size=(100, 100))
 
         self.b_anchor = UIAnchorLayout()
         self.b_anchor.default_anchor_y = "bottom"
 
         self.bv_layout = UIBoxLayout(vertical=True, space_between=10)
         self.bv_layout.add(self.button_start)
-        self.bv_layout.add(second_vert_space)
+        self.bv_layout.add(sv_space)
 
         self.b_anchor.add(self.bv_layout)
         self.manager.add(self.b_anchor)
-
         self.button_back.on_click = lambda event: self.back_triggered(event)
+        self.button_start.on_click = lambda event: self.start_triggered(event)
+
+    def on_draw(self):
+        super().on_draw()
+
+        x_offset = self.width // 2 - 375
+        y_offset = self.height * 0.55 + 25
+
+        for i in "NAME":
+            self.surface.draw_texture(x_offset, y_offset, 24, 34, self.window.sprites[i])
+            x_offset += 34
+
+        x_offset = self.width // 2 - 375
+        y_offset = self.height * 0.55 - 32
+
+        for i in "SEED":
+            self.surface.draw_texture(x_offset, y_offset, 24, 34, self.window.sprites[i])
+            x_offset += 34
 
     def back_triggered(self, event):
         self.window.show_view(self.window.menu_view)
+
+    def start_triggered(self, event):
+        name = self.input_name.text
+        seed = self.input_seed.text
+        if fullmatch(r'\S\w*\S', name):
+            data = {'name': name, 'seed': seed}
+            self.window.gameview = GameView(self.window, data=data)
+            self.window.show_view(self.window.gameview)

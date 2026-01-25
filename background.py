@@ -27,6 +27,8 @@ class BackgroundView(arcade.Sprite):
                 if self.current_texture >= len(self.textures):
                     self.current_texture = 0
                 self.texture = self.textures[self.current_texture]
+        else:
+            self.texture = self.textures[0]
 
     def resize(self, width, height):
         self.scale_x = width / 640
