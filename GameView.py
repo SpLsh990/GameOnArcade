@@ -4,6 +4,7 @@ from random import randint
 from baseView import BaseView
 from pauseView import PauseView
 
+
 # TODO реализовать сохранения
 
 class GameView(BaseView):
@@ -22,11 +23,10 @@ class GameView(BaseView):
             "iron": arcade.load_texture("sprites/world/iron.png"),
             "lithium": arcade.load_texture("sprites/world/lithium.png"),
             "mountains": arcade.load_texture("sprites/world/mountain.png"),
-            "silver": arcade.load_texture("sprites/world/silver.png"),
-            "snow": arcade.load_texture("sprites/world/snow.png"),
             "stone": arcade.load_texture("sprites/world/stone.png"),
             "uranium": arcade.load_texture("sprites/world/uranium.png"),
             "water": arcade.load_texture("sprites/world/water.png"),
+            "titanium": arcade.load_texture("sprites/world/titanium.png")
         }
         self.spriteList = arcade.SpriteList()
 
@@ -48,7 +48,7 @@ class GameView(BaseView):
                                  y + self.tile_size // 2)
             self.spriteList.append(tile)
 
-        #self.phys_engine = arcade.PhysicsEngineSimple(self.data['entity'], self.collisions)
+        # self.phys_engine = arcade.PhysicsEngineSimple(self.data['entity'], self.collisions)
 
     def on_draw(self):
         self.clear()
@@ -58,9 +58,10 @@ class GameView(BaseView):
     def on_update(self, delta_time):
         if self.pause:
             return
+        self.check_camera()
         self.camera.position = self.camera_pos
         self.camera.zoom = self.camera_zoom
-        #self.phys_engine.update()
+        # self.phys_engine.update()
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         if buttons == arcade.MOUSE_BUTTON_LEFT:
@@ -73,7 +74,7 @@ class GameView(BaseView):
             if self.camera_zoom * zoom_factor < 4.0:
                 self.camera_zoom *= zoom_factor
         elif scroll_y < 0:
-            if self.camera_zoom / zoom_factor > 1:
+            if self.camera_zoom / zoom_factor > 1.5:
                 self.camera_zoom /= zoom_factor
 
     def on_key_press(self, key, modifiers):
@@ -81,3 +82,18 @@ class GameView(BaseView):
             self.pause = True
             if self.pause:
                 self.window.show_view(self.window.pause_view)
+
+    # Ограничение камеры в пределах игрового мира
+    def check_camera(self):
+        zoom = self.camera.zoom
+
+        half_viewport_width = (self.width / 2) / zoom
+        half_viewport_height = (self.height / 2) / zoom
+
+        min_x = half_viewport_width
+        max_x = (self.cols * self.tile_size) - half_viewport_width
+        min_y = half_viewport_height
+        max_y = (self.rows * self.tile_size) - half_viewport_height
+
+        self.camera_pos[0] = max(min_x, min(self.camera_pos[0], max_x))
+        self.camera_pos[1] = max(min_y, min(self.camera_pos[1], max_y))

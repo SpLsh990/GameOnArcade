@@ -1,10 +1,13 @@
 import arcade
 import json
+import pickle
 from pathlib import Path
-from arcade.gui import UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIInteractiveWidget, Surface
+from arcade.gui import UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIInteractiveWidget, Surface, UIMessageBox
+from arcade import Section
 from baseView import BaseView
 from GameView import GameView
 from saveSlot import SaveSlot
+from CustomButton import CustomButton
 
 
 class SavesView(BaseView):
@@ -26,21 +29,17 @@ class SavesView(BaseView):
         v_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
         h_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
 
-        self.button_back = UITextureButton(texture=self.window.sprites['back_n'],
-                                           texture_hovered=self.window.sprites['back_a'],
-                                           texture_pressed=self.window.sprites['back_t'],
-                                           scale=0.13)
+        self.button_back = CustomButton(768 * 0.3, 248 * 0.3, "BACK", 0.3, 0.3, self.window.sprites['button_n'],
+                                        self.window.sprites['button_a'],
+                                        self.window.sprites['button_t'])
 
-        self.button_start = UITextureButton(texture=self.window.sprites['start_n'],
-                                            texture_hovered=self.window.sprites['start_a'],
-                                            texture_pressed=self.window.sprites['start_t'],
-                                            scale=0.3)
+        self.button_start = CustomButton(768 * 0.4, 248 * 0.4, "START", 0.4, 0.4, self.window.sprites['button_n'],
+                                         self.window.sprites['button_a'],
+                                         self.window.sprites['button_t'])
 
-        self.button_delete = UITextureButton(texture=self.window.sprites['delete_n'],
-                                             texture_hovered=self.window.sprites["delete_a"],
-                                             texture_pressed=self.window.sprites['delete_t'],
-                                             scale=0.3
-                                             )
+        self.button_delete = CustomButton(768 * 0.4, 248 * 0.4, "DELETE", 0.4, 0.4, self.window.sprites['button_n'],
+                                          self.window.sprites['button_a'],
+                                          self.window.sprites['button_t'])
 
         sv_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
 
@@ -82,10 +81,12 @@ class SavesView(BaseView):
     def delete_triggered(self, event):
         for save in range(len(self.saves) - 1, -1, -1):
             if self.saves[save].is_clicked():
-                file = Path(f'./saves/{self.saves[save].data['name']}.json')
-                file.unlink(missing_ok=True)
+                filejson = Path(f'./saves/{self.saves[save].data['name']}.json')
+                filesaves = Path(f'./saves/{self.saves[save].data['name']}.saves')
+                filejson.unlink(missing_ok=True)
+                filesaves.unlink(missing_ok=True)
                 self.cv_layout.remove(self.saves[save])
-                self.saves.pop(save)
+                del self.saves[save]
 
     def start_triggered(self, event):
         clicked = []
@@ -96,6 +97,15 @@ class SavesView(BaseView):
             self.window.game_view = GameView(self.window, data=clicked[0].data)
             self.window.is_game = True
             self.window.show_view(self.window.game_view)
+        else:
+            self.message_box = UIMessageBox(
+                width=300,
+                height=200,
+                message_text=(
+                    "Можно запустить только одну игру за раз"
+                ),
+                buttons=["OK"])
+            self.manager.add(self.message_box)
 
     def on_draw(self):
         super().on_draw()
@@ -103,24 +113,28 @@ class SavesView(BaseView):
             x_offset = self.width // 2 - 140
             y_offset = self.height // 2
             for char in "EMPTY":
-                self.surface.draw_texture(x_offset, y_offset, 48, 68, self.window.sprites[char])
+                self.surface.draw_texture(x_offset, y_offset, 48, 68, self.window.sprites[f"{char}_n"])
                 x_offset += 58
         else:
             for save in self.saves:
                 if save not in self.cv_layout.children:
                     self.cv_layout.add(save)
 
+    # Функция добавления виджетов сохранения в стек
     def load_saves(self):
         path = Path("./saves")
-        saves = list(path.glob("*.json"))
-        for save in range(len(saves)):
-            with open(saves[save].resolve(), "r", encoding='utf-8') as sv:
-                data = json.load(sv)
-            if len(self.saves) != 0:
-                for slot in self.saves:
-                    if data['name'] == slot.data['name']:
-                        break
-                    else:
-                        self.saves.append(SaveSlot(data=data, slot=save))
-            else:
-                self.saves.append(SaveSlot(data=data, slot=save))
+        saves_json = list(path.glob("*.json"))
+        saves_sv = list(path.glob("*.sv"))
+        for i in range(len(self.saves) - 1, -1, -1):
+            self.cv_layout.remove(self.saves[i])
+            del self.saves[i]
+        for save in range(len(saves_json)):
+            with open(saves_json[save].resolve(), "r", encoding='utf-8') as save_json:
+                data_json = json.load(save_json)
+                try:
+                    with open(saves_sv[save].resolve(), "rb") as save_sv:
+                        data_sv = pickle.load(save_sv)
+                        if data_json == data_sv:
+                            self.saves.append(SaveSlot(data=data_json, slot=save))
+                except IndexError:
+                    continue

@@ -2,8 +2,10 @@ import arcade
 from arcade.gui import UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIInteractiveWidget
 from baseView import BaseView
 import json
+import pickle
 from random import randint
 from datetime import date
+from CustomButton import CustomButton
 
 
 class PauseView(BaseView):
@@ -14,24 +16,19 @@ class PauseView(BaseView):
 
     def create_widget(self):
         c_space = UISpace(width=800, height=100, color=(0, 0, 0, 0))
-        try:
-            self.button_continue = UITextureButton(texture=self.window.sprites['continue_n'],
-                                                   texture_hovered=self.window.sprites['continue_a'],
-                                                   texture_pressed=self.window.sprites['continue_t'],
-                                                   scale=0.362)
+        self.button_continue = CustomButton(768 * 0.4, 248 * 0.4, "CONTINUE", 0.362, 0.362,
+                                            self.window.sprites['button_n'],
+                                            self.window.sprites['button_a'],
+                                            self.window.sprites['button_t'])
 
-            self.button_exit = UITextureButton(texture=self.window.sprites['exit_n'],
-                                               texture_hovered=self.window.sprites['exit_a'],
-                                               texture_pressed=self.window.sprites['exit_t'],
-                                               scale=0.4)
+        self.button_settings = CustomButton(768 * 0.4, 248 * 0.4, "SETTINGS", 0.362, 0.362,
+                                            self.window.sprites['button_n'],
+                                            self.window.sprites['button_a'],
+                                            self.window.sprites['button_t'])
 
-            self.button_settings = UITextureButton(texture=self.window.sprites['settings_n'],
-                                                   texture_hovered=self.window.sprites['settings_a'],
-                                                   texture_pressed=self.window.sprites['settings_t'],
-                                                   scale=0.362)
-        except Exception as e:
-            print(e)
-            print(self.window.sprites)
+        self.button_exit = CustomButton(768 * 0.4, 248 * 0.4, "EXIT", 0.4, 0.4, self.window.sprites['button_n'],
+                                        self.window.sprites['button_a'],
+                                        self.window.sprites['button_t'])
         self.c_anchor = UIAnchorLayout()
         self.cv_layout = UIBoxLayout(vertical=True, space_between=10)
 
@@ -55,8 +52,10 @@ class PauseView(BaseView):
     def exit_triggered(self, event):
         self.data = self.window.game_view.data
         self.data['date'] = str(date.today())
-        with open(f"saves/{self.data.get("name", randint(1, 10000000))}.json", "w", encoding="utf-8") as file:
+        with open(f"saves/{self.data.get("name")}.json", "w", encoding="utf-8") as file:
             json.dump(self.data, file, indent=4, ensure_ascii=False)
+        with open(f"saves/{self.data.get("name")}.sv", "wb") as file:
+            pickle.dump(self.data, file)
         self.window.is_game = False
         self.window.show_view(self.window.menu_view)
 

@@ -1,5 +1,6 @@
 import arcade
 from arcade.gui import UIManager, UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIMessageBox
+import threading
 
 from background import BackgroundView
 from mainView import MainMenuView
@@ -9,8 +10,8 @@ from savesView import SavesView
 from GameView import GameView
 from pauseView import PauseView
 
-SCREEN_WIDTH = 960
-SCREEN_HEIGHT = 720
+SCREEN_WIDTH = 1920
+SCREEN_HEIGHT = 1080
 SCREEN_TITLE = "АВАВААВАВАВАВАВАВА"
 
 
@@ -30,16 +31,21 @@ class Window(arcade.Window):
         self.settings_view = SettingsView(self)
         self.new_game_view = NewGameView(self)
         self.saves_view = SavesView(self)
+        self.saves_view.load_saves()
         self.pause_view = PauseView(self)
-
         self.is_game = False
         self.show_view(self.menu_view)
 
+
     def load_textures(self):
         for i in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
-            self.sprites[i] = arcade.load_texture(f"sprites/letters/{i}.png")
+            self.sprites[f"{i}_n"] = arcade.load_texture(f"sprites/letters_normal/{i}.png")
+            self.sprites[f"{i}_a"] = arcade.load_texture(f"sprites/letters_active/{i}.png")
+            self.sprites[f"{i}_t"] = arcade.load_texture(f"sprites/letters_triggered/{i}.png")
         for i in "0123456789":
-            self.sprites[i] = arcade.load_texture(f"sprites/digits/{i}.png")
+            self.sprites[f"{i}_n"] = arcade.load_texture(f"sprites/digits_normal/{i}.png")
+            self.sprites[f"{i}_a"] = arcade.load_texture(f"sprites/digits_active/{i}.png")
+            self.sprites[f"{i}_t"] = arcade.load_texture(f"sprites/digits_triggered/{i}.png")
         for i in ['', '-', '+', '_']:
             self.sprites[i] = arcade.load_texture(f"sprites/signs/{i}.png")
 
@@ -76,7 +82,13 @@ class Window(arcade.Window):
         self.sprites['continue_n'] = arcade.load_texture("sprites/buttons/button_continue/continue_normal.png")
         self.sprites['continue_a'] = arcade.load_texture("sprites/buttons/button_continue/continue_active.png")
         self.sprites['continue_t'] = arcade.load_texture("sprites/buttons/button_continue/continue_triggered.png")
-
+        self.sprites['skip_n'] = arcade.load_texture("sprites/buttons/button_skip/skip_normal.png")
+        self.sprites['skip_a'] = arcade.load_texture("sprites/buttons/button_skip/skip_active.png")
+        self.sprites['skip_t'] = arcade.load_texture("sprites/buttons/button_skip/skip_triggered.png")
+        self.sprites['button_n'] = arcade.load_texture("sprites/buttons/button2/button_normal.png")
+        self.sprites['button_a'] = arcade.load_texture("sprites/buttons/button2/button_active.png")
+        self.sprites['button_t'] = arcade.load_texture("sprites/buttons/button2/button_triggered.png")
+        self.sprites['button_e'] = arcade.load_texture("sprites/buttons/button2/button_empty.png")
 
     def on_draw(self):
         self.clear()
@@ -95,7 +107,7 @@ class Window(arcade.Window):
 
     def show_view(self, new_view):
         if not isinstance(new_view, GameView):
-            self.background.disable()
+            self.background.enable()
         else:
             self.background.disable()
         if self._current_view:
@@ -105,5 +117,5 @@ class Window(arcade.Window):
 
 
 if __name__ == "__main__":
-    window = Window(SCREEN_WIDTH, SCREEN_HEIGHT, "Больше не миллион оттенков серого и синего", False, False)
+    window = Window(SCREEN_WIDTH, SCREEN_HEIGHT, "Больше не миллион оттенков серого и синего", True, False)
     arcade.run()

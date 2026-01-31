@@ -1,4 +1,4 @@
-from noise import pnoise2, snoise2
+from noise import pnoise2
 from math import pi, e
 
 

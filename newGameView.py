@@ -4,6 +4,7 @@ from arcade.gui import UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UI
 from arcade.types import Color
 from baseView import BaseView
 from GameView import GameView
+from CustomButton import CustomButton
 from re import fullmatch
 
 
@@ -24,10 +25,9 @@ class NewGameView(BaseView):
         vert_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
         hor_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
 
-        self.button_back = UITextureButton(texture=self.window.sprites['back_n'],
-                                           texture_hovered=self.window.sprites['back_a'],
-                                           texture_pressed=self.window.sprites['back_t'],
-                                           scale=0.13)
+        self.button_back = CustomButton(768 * 0.3, 248 * 0.3, "BACK", 0.3, 0.3, self.window.sprites['button_n'],
+                                        self.window.sprites['button_a'],
+                                        self.window.sprites['button_t'])
 
         self.lv_layout.add(self.button_back)
         self.lv_layout.add(vert_space)
@@ -47,10 +47,9 @@ class NewGameView(BaseView):
         self.input_seed = UIInputText(width=600, height=112 * 0.4, border_color=(255, 255, 0), border_width=5,
                                       text_color=(255, 255, 0), font_size=20)
 
-        self.button_start = UITextureButton(texture=self.window.sprites['start_n'],
-                                            texture_hovered=self.window.sprites['start_a'],
-                                            texture_pressed=self.window.sprites['start_t'],
-                                            scale=0.3)
+        self.button_start = CustomButton(768 * 0.4, 248 * 0.4, "START", 0.4, 0.4, self.window.sprites['button_n'],
+                                         self.window.sprites['button_a'],
+                                         self.window.sprites['button_t'])
 
         space = UISpace(width=100, height=100, color=(0, 0, 0, 0))
         sv_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
@@ -87,14 +86,14 @@ class NewGameView(BaseView):
         y_offset = self.height * 0.55 + 25
 
         for i in "NAME":
-            self.surface.draw_texture(x_offset, y_offset, 24, 34, self.window.sprites[i])
+            self.surface.draw_texture(x_offset, y_offset, 24, 34, self.window.sprites[f"{i}_n"])
             x_offset += 34
 
         x_offset = self.width // 2 - 375
         y_offset = self.height * 0.55 - 32
 
         for i in "SEED":
-            self.surface.draw_texture(x_offset, y_offset, 24, 34, self.window.sprites[i])
+            self.surface.draw_texture(x_offset, y_offset, 24, 34, self.window.sprites[f"{i}_n"])
             x_offset += 34
 
     def back_triggered(self, event):
@@ -105,19 +104,31 @@ class NewGameView(BaseView):
     def start_triggered(self, event):
         name = self.input_name.text
         seed = self.input_seed.text
-        self.input_name.text = ""
-        self.input_seed.text = ""
-        if fullmatch(r'\S\w*\S', name):
-            data = {'name': name, 'seed': seed}
-            self.window.game_view = GameView(self.window, data=data)
-            self.window.is_game = True
-            self.window.show_view(self.window.game_view)
+        if name not in [slot.get_name() for slot in self.window.saves_view.saves]:
+            if fullmatch(r'\w*\S', name):
+
+                self.input_name.text = ""
+                self.input_seed.text = ""
+
+                data = {'name': name, 'seed': seed}
+                self.window.game_view = GameView(self.window, data=data)
+                self.window.is_game = True
+                self.window.show_view(self.window.game_view)
+            else:
+                self.message_box = UIMessageBox(
+                    width=300,
+                    height=200,
+                    message_text=(
+                        "Некорректное название мира"
+                    ),
+                    buttons=["OK"])
+                self.manager.add(self.message_box)
         else:
             self.message_box = UIMessageBox(
                 width=300,
                 height=200,
                 message_text=(
-                    "Некорректное название мира"
+                    "Данное название мира уже занято"
                 ),
                 buttons=["OK"])
             self.manager.add(self.message_box)

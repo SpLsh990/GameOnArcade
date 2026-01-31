@@ -1,6 +1,7 @@
 import arcade
 from arcade.gui import UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIInteractiveWidget
 from baseView import BaseView
+from CustomButton import CustomButton
 
 
 class MainMenuView(BaseView):
@@ -11,25 +12,30 @@ class MainMenuView(BaseView):
     def create_widget(self):
         c_space = UISpace(width=800, height=100, color=(0, 0, 0, 0))
 
-        self.button_new_game = UITextureButton(texture=self.window.sprites['new_game_n'],
-                                          texture_hovered=self.window.sprites['new_game_a'],
-                                          texture_pressed=self.window.sprites['new_game_t'],
-                                          scale=0.4)
+        """self.button_new_game = UITextureButton(texture=self.window.sprites['new_game_n'],
+                                               texture_hovered=self.window.sprites['new_game_a'],
+                                               texture_pressed=self.window.sprites['new_game_t'],
+                                               scale=0.4)
+        """
 
-        self.button_saves = UITextureButton(texture=self.window.sprites['saves_n'],
-                                       texture_hovered=self.window.sprites['saves_a'],
-                                       texture_pressed=self.window.sprites['saves_t'],
-                                       scale=0.4)
+        self.button_new_game = CustomButton(768 * 0.4, 248 * 0.4, "NEW GAME", 0.362, 0.362,
+                                            self.window.sprites['button_n'],
+                                            self.window.sprites['button_a'],
+                                            self.window.sprites['button_t'])
 
-        self.button_exit = UITextureButton(texture=self.window.sprites['exit_n'],
-                                      texture_hovered=self.window.sprites['exit_a'],
-                                      texture_pressed=self.window.sprites['exit_t'],
-                                      scale=0.4)
+        self.button_saves = CustomButton(768 * 0.4, 248 * 0.4, "SAVES", 0.4, 0.4, self.window.sprites['button_n'],
+                                         self.window.sprites['button_a'],
+                                         self.window.sprites['button_t'])
 
-        self.button_settings = UITextureButton(texture=self.window.sprites['settings_n'],
-                                          texture_hovered=self.window.sprites['settings_a'],
-                                          texture_pressed=self.window.sprites['settings_t'],
-                                          scale=0.362)
+        self.button_settings = CustomButton(768 * 0.4, 248 * 0.4, "SETTINGS", 0.362, 0.362,
+                                            self.window.sprites['button_n'],
+                                            self.window.sprites['button_a'],
+                                            self.window.sprites['button_t'])
+
+        self.button_exit = CustomButton(768 * 0.4, 248 * 0.4, "EXIT", 0.4, 0.4, self.window.sprites['button_n'],
+                                        self.window.sprites['button_a'],
+                                        self.window.sprites['button_t'])
+
         self.c_anchor = UIAnchorLayout()
         self.cv_layout = UIBoxLayout(vertical=True, space_between=10)
 
