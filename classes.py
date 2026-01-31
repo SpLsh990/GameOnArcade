@@ -114,7 +114,7 @@ class Powerstation(BaseObject):
 
 class PowerLine(BaseObject):
     def __init__(self, x, y, hp):
-        super.__init__(x, y, hp)
+        super().__init__(x, y, hp)
 
 
 class Drill(BaseObject):
@@ -138,7 +138,7 @@ class Drill(BaseObject):
         for i in way:
             nx, ny = x + 10 * i[0], y + 10 * i[1]
             l.append(world[x, y])
-        l.sort(reverse=True)
+            l.sort(reverse=True)
         for i in l:
             if i in self.can_mining:
                 self.mining_speed *= l.count(i) / 4

@@ -81,7 +81,6 @@ class World:
                         self.world[(x, y)] = most_frequent_simple(tiles)
 
     def create_world(self):
-        self.edges()
         self.add_bioms()
         self.add_item('mountains', 0.6, octaves=2, seed_offset=5000)
         self.add_item('water', 0.66, octaves=2, seed_offset=1000)
