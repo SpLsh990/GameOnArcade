@@ -1,11 +1,9 @@
 import arcade
-from ground import World
+from world import World
 from random import randint
 from baseView import BaseView
 from pauseView import PauseView
 
-
-# TODO реализовать сохранения
 
 class GameView(BaseView):
     def __init__(self, window, rows=100, cols=100, tile_size=10, data=None):
@@ -48,6 +46,7 @@ class GameView(BaseView):
                                  y + self.tile_size // 2)
             self.spriteList.append(tile)
 
+        self.dash = {}
         # self.phys_engine = arcade.PhysicsEngineSimple(self.data['entity'], self.collisions)
 
     def on_draw(self):

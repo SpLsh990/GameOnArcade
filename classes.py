@@ -114,7 +114,7 @@ class Powerstation(BaseObject):
 
 class PowerLine(BaseObject):
     def __init__(self, x, y, hp):
-        super().__init__(x, y, hp)
+        super.__init__(x, y, hp)
 
 
 class Drill(BaseObject):
