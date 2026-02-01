@@ -1,8 +1,9 @@
-import arcade
-from world import World
+import threading
 from random import randint
+import arcade
 from baseView import BaseView
-from pauseView import PauseView
+from classes import *
+from world import World
 
 
 class GameView(BaseView):
@@ -31,6 +32,7 @@ class GameView(BaseView):
         self.pause = False
 
         self.data['seed'] = data['seed'] if data['seed'] else randint(1, 100000000)
+        self.data['obj'] = {"Base": [Base("""Сюда х, y базы, не в кортеже""")]}
 
         self.world = World(self.data['seed'], self.rows, self.cols, self.tile_size)
         self.world.create_world()
@@ -46,21 +48,72 @@ class GameView(BaseView):
                                  y + self.tile_size // 2)
             self.spriteList.append(tile)
 
-        self.dash = {}
         # self.phys_engine = arcade.PhysicsEngineSimple(self.data['entity'], self.collisions)
 
-    def on_draw(self):
+    def on_draw(self, delta_time=30):
         self.clear()
         with self.camera.activate():
             self.spriteList.draw()
+            for spriteList in self.data['obj'].values():
+                spriteList.draw()
 
-    def on_update(self, delta_time):
+    def on_update(self, delta_time=30):
         if self.pause:
             return
         self.check_camera()
         self.camera.position = self.camera_pos
         self.camera.zoom = self.camera_zoom
+        """thread1 = threading.Thread(target=self.log_ent(), args=())
+        thread2 = threading.Thread(target=self.log_obj(), args=("Drill"))
+        thread3 = threading.Thread(target=self.log_obj(), args=("Factory"))
+        thread1.start()
+        thread2.start()
+        thread3.start()
+        thread1.join()
+        thread2.join()
+        thread3.join()"""
+        for i in ["Conveyor", "Drill", "Factory"]:
+            t = threading.Thread(target=self.log_obj(), args=(i))
+            threads.append(t)
+            t.start()
+            t.join()
+
+
+
         # self.phys_engine.update()
+    def log_obj(self, obj_type):
+        #TODO Сделать инициализацию логики для пуль
+        """if obj_type == "Bullet":
+            for obj in self.data['obj'][obj_type]:
+                for spriteList in []
+                if arcade.check_for_collision_with_list(obj, self.spriteList):"""
+        for obj in self.data['obj'][obj_type]:
+            if obj.gp <= 0:
+                obj.remove_from_sprite_lists()
+                self.entity.remove(ent)
+            else:
+                obj.logic(self.tile_size, path)
+
+    """def log_ent(self, delta_time=30):
+        for x in range(self.cols):
+            for y in range(self.rows):
+                grid[x * self.tile_size, y * self.tile_size] = 1
+        for i in self.collisions():
+            grid[i] = 0
+        for i in self.world[obj].items():
+            for (x, y), item in i.items():
+                if isinstance(item, Wall):
+                    grid[(x, y)] = 5
+                elif not isinstance(item, Conveyor):
+                    grid[(x, y)] = 2
+        astra = AStar2D(grid)
+        path = astra.find_path(self.spawn, (self.data['obj']['Base'].x, self.data['obj']['Base'].y))
+        for ent in self.entity:
+            if ent.gp <= 0:
+                ent.remove_from_sprite_lists()
+                self.entity.remove(ent)
+            else:
+                ent.logic(self.tile_size, path)"""
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         if buttons == arcade.MOUSE_BUTTON_LEFT:

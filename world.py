@@ -52,8 +52,8 @@ class World:
                     self.world[(x, y)] = 'endworld'
 
     def add_bioms(self):
-        for r in range(1, self.ROWS):
-            for c in range(1, self.COLS):
+        for r in range(1, self.ROWS + 1):
+            for c in range(1, self.COLS + 1):
                 x = self.TILE_SIZE * (c - 1)
                 y = self.TILE_SIZE * (r - 1)
                 if r == 1 or r == self.ROWS or c == 1 or c == self.COLS:  # Добавление краев карты
@@ -62,7 +62,7 @@ class World:
                     self.world[x, y] = 'stone'
 
     def checking(self):
-        for r in range(2, self.ROWS):
+        for r in range(2, self.ROWS)    :
             for c in range(2, self.COLS):
                 x = self.TILE_SIZE * (c - 1)
                 y = self.TILE_SIZE * (r - 1)
