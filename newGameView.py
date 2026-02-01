@@ -11,7 +11,6 @@ from re import fullmatch
 class NewGameView(BaseView):
     def __init__(self, window):
         super().__init__(window)
-
         self.create_widget()
 
     def create_widget(self):
@@ -25,9 +24,11 @@ class NewGameView(BaseView):
         vert_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
         hor_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
 
-        self.button_back = CustomButton(768 * 0.3, 248 * 0.3, "BACK", 0.3, 0.3, self.window.sprites['button_n'],
-                                        self.window.sprites['button_a'],
-                                        self.window.sprites['button_t'])
+        self.button_back = CustomButton(self.width * 0.15, self.height * 0.075, "BACK", self.width * 0.00019,
+                                        self.width * 0.00019,
+                                        self.window.textures['button_n'],
+                                        self.window.textures['button_a'],
+                                        self.window.textures['button_t'])
 
         self.lv_layout.add(self.button_back)
         self.lv_layout.add(vert_space)
@@ -47,9 +48,11 @@ class NewGameView(BaseView):
         self.input_seed = UIInputText(width=600, height=112 * 0.4, border_color=(255, 255, 0), border_width=5,
                                       text_color=(255, 255, 0), font_size=20)
 
-        self.button_start = CustomButton(768 * 0.4, 248 * 0.4, "START", 0.4, 0.4, self.window.sprites['button_n'],
-                                         self.window.sprites['button_a'],
-                                         self.window.sprites['button_t'])
+        self.button_start = CustomButton(self.width * 0.2, self.height * 0.1, "START", self.width * 0.00023,
+                                         self.width * 0.00023,
+                                         self.window.textures['button_n'],
+                                         self.window.textures['button_a'],
+                                         self.window.textures['button_t'])
 
         space = UISpace(width=100, height=100, color=(0, 0, 0, 0))
         sv_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
@@ -86,14 +89,14 @@ class NewGameView(BaseView):
         y_offset = self.height * 0.55 + 25
 
         for i in "NAME":
-            self.surface.draw_texture(x_offset, y_offset, 24, 34, self.window.sprites[f"{i}_n"])
+            self.surface.draw_texture(x_offset, y_offset, 24, 34, self.window.textures[f"{i}_n"])
             x_offset += 34
 
         x_offset = self.width // 2 - 375
         y_offset = self.height * 0.55 - 32
 
         for i in "SEED":
-            self.surface.draw_texture(x_offset, y_offset, 24, 34, self.window.sprites[f"{i}_n"])
+            self.surface.draw_texture(x_offset, y_offset, 24, 34, self.window.textures[f"{i}_n"])
             x_offset += 34
 
     def back_triggered(self, event):

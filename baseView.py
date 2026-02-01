@@ -19,8 +19,3 @@ class BaseView(arcade.View):
 
     def on_resize(self, width: int, height: int):
         super().on_resize(width, height)
-
-    def on_update(self, delta_time):
-        fps = 1 / delta_time if delta_time > 0 else 0
-        if fps < 20:
-            print(f"FPS {fps:.3f}")

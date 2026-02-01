@@ -12,7 +12,9 @@ class SettingsView(BaseView):
 
         self.sound = 56
         self.music = 89
-
+        self.menu_music = arcade.load_sound("music/menu.ogg")
+        self.game_music = arcade.load_sound("music/game.ogg")
+        self.player = None
         self.create_widget()
 
     def create_widget(self):
@@ -26,9 +28,11 @@ class SettingsView(BaseView):
         v_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
         h_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
 
-        self.button_back = CustomButton(768 * 0.3, 248 * 0.3, "BACK", 0.3, 0.3, self.window.sprites['button_n'],
-                                        self.window.sprites['button_a'],
-                                        self.window.sprites['button_t'])
+        self.button_back = CustomButton(self.width * 0.15, self.height * 0.075, "BACK", self.width * 0.00019,
+                                        self.width * 0.00019,
+                                        self.window.textures['button_n'],
+                                        self.window.textures['button_a'],
+                                        self.window.textures['button_t'])
 
         self.lv_layout.add(self.button_back)
         self.lv_layout.add(v_space)
@@ -46,23 +50,29 @@ class SettingsView(BaseView):
         self.cmusic_layout = UIBoxLayout(vertical=False, space_between=10)
         self.csound_layout = UIBoxLayout(vertical=False, space_between=10)
 
-        self.button_music = CustomButton(768 * 0.3, 248 * 0.3, "MUSIC", 0.3, 0.3, self.window.sprites['button_n'],
-                                         self.window.sprites['button_a'],
-                                         self.window.sprites['button_t'])
+        self.button_music = CustomButton(self.width * 0.2, self.height * 0.1, "MUSIC", self.width * 0.00023,
+                                         self.width * 0.00023,
+                                         self.window.textures['button_n'],
+                                         self.window.textures['button_a'],
+                                         self.window.textures['button_t'])
 
-        self.button_sound = CustomButton(768 * 0.3, 248 * 0.3, "SOUND", 0.3, 0.3, self.window.sprites['button_n'],
-                                         self.window.sprites['button_a'],
-                                         self.window.sprites['button_t'])
+        self.button_sound = CustomButton(self.width * 0.2, self.height * 0.1, "SOUND", self.width * 0.00023,
+                                         self.width * 0.00023,
+                                         self.window.textures['button_n'],
+                                         self.window.textures['button_a'],
+                                         self.window.textures['button_t'])
         c_space = UISpace(width=100, height=200, color=(0, 0, 0, 0))
 
         self.music_slider = UISlider(width=300, height=50, min_value=0, max_value=100, value=self.music)
         self.sound_slider = UISlider(width=300, height=50, min_value=0, max_value=100, value=self.sound)
 
-        self.digits_music = CustomButton(102, 34, f"{int(self.music_slider.value):03}", 0.3, 0.3,
-                                         self.window.sprites['button_e'])
+        self.digits_music = CustomButton(self.width * 0.066, self.height * 0.039, f"{int(self.music_slider.value):03}",
+                                         self.width * 0.0002, self.width * 0.0002,
+                                         self.window.textures['button_e'], change_text=False)
 
-        self.digits_sound = CustomButton(102, 34, f"{int(self.sound_slider.value):03}", 0.3, 0.3,
-                                         self.window.sprites['button_e'])
+        self.digits_sound = CustomButton(self.width * 0.066, self.height * 0.039, f"{int(self.sound_slider.value):03}",
+                                         self.width * 0.0002, self.width * 0.0002,
+                                         self.window.textures['button_e'], change_text=False)
 
         self.cmusic_layout.add(self.button_music)
         self.cmusic_layout.add(self.music_slider)
@@ -119,3 +129,10 @@ class SettingsView(BaseView):
         self.button_sound.change(self.bool_sound)
         text = f"{int(self.sound_slider.value):03}" if self.bool_sound else "OFF"
         self.digits_sound.load_text(text)
+
+    def change(self):
+        if self.bool_music:
+            self.player = self.menu_music.play(volume=0.5 * self.music, loop=True)
+        else:
+            if self.player:
+                self.player.stop()

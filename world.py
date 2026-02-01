@@ -15,21 +15,9 @@ class World:
         self.COLS = COLS
         self.TILE_SIZE = TILE_SIZE
         self.generator = SeedNoiseGenerator(seed)
-        self.colors = {'endworld': (40, 20, 30),
-                       'mountains': (55, 0, 0),
-                       'stone': (100, 100, 100),
-                       'snow': (255, 255, 255),
-                       'water': (48, 15, 240),
-                       'copper': (244, 132, 5),
-                       'iron': (255, 255, 180),
-                       'coal': (40, 40, 40),
-                       'lithium': (100, 105, 155),
-                       'titanium': (35, 45, 105),
-                       'uranium': (55, 255, 0),
-                       'silver': (214, 235, 202)
-                       }
         self.world = {}
-        self.collisions = []
+        self.mountains = []
+        self.water = []
 
     def add_item(self, item, limit, octaves=4, seed_offset=0, persistence=0.5, lacunarity=2.0,
                  scale=0.01):
@@ -41,19 +29,13 @@ class World:
                 if value > limit and self.world[(x, y)] == 'stone':
                     self.world[(x, y)] = item
                     if item == "mountains":
-                        self.collisions.append((x, y))
-
-    def edges(self):
-        for r in range(1, self.ROWS + 1):
-            for c in range(1, self.COLS + 1):
-                x = self.TILE_SIZE * (c - 1)
-                y = self.TILE_SIZE * (r - 1)
-                if r == 1 or r == self.ROWS or c == 1 or c == self.COLS:
-                    self.world[(x, y)] = 'endworld'
+                        self.mountains.append((x, y))
+                    elif item == "water":
+                        self.water.append((x, y))
 
     def add_bioms(self):
-        for r in range(1, self.ROWS):
-            for c in range(1, self.COLS):
+        for r in range(1, self.ROWS + 1):
+            for c in range(1, self.COLS + 1):
                 x = self.TILE_SIZE * (c - 1)
                 y = self.TILE_SIZE * (r - 1)
                 if r == 1 or r == self.ROWS or c == 1 or c == self.COLS:  # Добавление краев карты
@@ -84,14 +66,13 @@ class World:
         self.add_bioms()
         self.add_item('mountains', 0.6, octaves=2, seed_offset=5000)
         self.add_item('water', 0.66, octaves=2, seed_offset=1000)
-        self.add_item('copper', 0.63, octaves=3, seed_offset=255)
-        self.add_item('coal', 0.652, octaves=2, seed_offset=3100)
-        self.add_item('iron', 0.66, octaves=2, seed_offset=2500)
-        self.add_item('silver', 0.66, octaves=2, seed_offset=5000)
-        self.add_item('lithium', 0.67, octaves=2, seed_offset=3500)
-        # self.add_item('titanium', 0.67, octaves=1, seed_offset=4500)
+        self.add_item('copper', 0.64, octaves=3, seed_offset=255)
+        self.add_item('coal', 0.652, octaves=3, seed_offset=3100)
+        self.add_item('iron', 0.66, octaves=4, seed_offset=2500)
+        self.add_item('lithium', 0.67, octaves=4, seed_offset=3500)
+        self.add_item('titanium', 0.67, octaves=4, seed_offset=4500)
         self.add_item('uranium', 0.69, octaves=4, seed_offset=500)
         self.checking()
 
     def get_world(self):
-        return self.world, self.collisions
+        return self.world, self.mountains, self.water

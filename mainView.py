@@ -12,29 +12,29 @@ class MainMenuView(BaseView):
     def create_widget(self):
         c_space = UISpace(width=800, height=100, color=(0, 0, 0, 0))
 
-        """self.button_new_game = UITextureButton(texture=self.window.sprites['new_game_n'],
-                                               texture_hovered=self.window.sprites['new_game_a'],
-                                               texture_pressed=self.window.sprites['new_game_t'],
-                                               scale=0.4)
-        """
+        self.button_new_game = CustomButton(self.width * 0.2, self.height * 0.1, "NEW GAME",
+                                            size_letter=self.width * 0.00023, size_space=self.width * 0.00023,
+                                            texture_normal=self.window.textures['button_n'],
+                                            texture_active=self.window.textures['button_a'],
+                                            texture_triggered=self.window.textures['button_t'])
 
-        self.button_new_game = CustomButton(768 * 0.4, 248 * 0.4, "NEW GAME", 0.362, 0.362,
-                                            self.window.sprites['button_n'],
-                                            self.window.sprites['button_a'],
-                                            self.window.sprites['button_t'])
+        self.button_saves = CustomButton(self.width * 0.2, self.height * 0.1, "SAVES", self.width * 0.00023,
+                                         self.width * 0.00023,
+                                         self.window.textures['button_n'],
+                                         self.window.textures['button_a'],
+                                         self.window.textures['button_t'])
 
-        self.button_saves = CustomButton(768 * 0.4, 248 * 0.4, "SAVES", 0.4, 0.4, self.window.sprites['button_n'],
-                                         self.window.sprites['button_a'],
-                                         self.window.sprites['button_t'])
+        self.button_settings = CustomButton(self.width * 0.2, self.height * 0.1, "SETTINGS", self.width * 0.00023,
+                                            self.width * 0.00023,
+                                            self.window.textures['button_n'],
+                                            self.window.textures['button_a'],
+                                            self.window.textures['button_t'])
 
-        self.button_settings = CustomButton(768 * 0.4, 248 * 0.4, "SETTINGS", 0.362, 0.362,
-                                            self.window.sprites['button_n'],
-                                            self.window.sprites['button_a'],
-                                            self.window.sprites['button_t'])
-
-        self.button_exit = CustomButton(768 * 0.4, 248 * 0.4, "EXIT", 0.4, 0.4, self.window.sprites['button_n'],
-                                        self.window.sprites['button_a'],
-                                        self.window.sprites['button_t'])
+        self.button_exit = CustomButton(self.width * 0.2, self.height * 0.1, "EXIT", self.width * 0.00023,
+                                        self.width * 0.00023,
+                                        self.window.textures['button_n'],
+                                        self.window.textures['button_a'],
+                                        self.window.textures['button_t'])
 
         self.c_anchor = UIAnchorLayout()
         self.cv_layout = UIBoxLayout(vertical=True, space_between=10)

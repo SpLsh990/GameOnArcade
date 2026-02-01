@@ -3,8 +3,8 @@ from arcade.gui import UIInteractiveWidget, Surface
 
 
 class CustomButton(UIInteractiveWidget):
-    def __init__(self, width, height, text, size_letter=1, size_space=1, texture_normal=None, texture_active=None,
-                 texture_triggered=None):
+    def __init__(self, width, height, text="", size_letter=1, size_space=1, texture_normal=None, texture_active=None,
+                 texture_triggered=None, change_text=True):
         super().__init__(width=width, height=height)
         self.texture_normal = texture_normal
         self.texture_active = texture_active if texture_active else texture_normal
@@ -12,6 +12,7 @@ class CustomButton(UIInteractiveWidget):
         self.texture = self.texture_normal
 
         self.is_active = True
+        self.change_text = change_text
 
         self.size_letter = size_letter
         self.size_space = size_space
@@ -35,7 +36,7 @@ class CustomButton(UIInteractiveWidget):
             self.alph[f"{i}_a"] = arcade.load_texture(f"sprites/digits_active/{i}.png")
             self.alph[f"{i}_t"] = arcade.load_texture(f"sprites/digits_triggered/{i}.png")
         for i in ['-', '+', '_']:
-            self.alph[i] = arcade.load_texture(f"sprites/signs/{i}.png")
+            self.alph[f"{i}_n"] = arcade.load_texture(f"sprites/signs/{i}.png")
 
     def load_text(self, text=None):
         if text:
@@ -43,6 +44,9 @@ class CustomButton(UIInteractiveWidget):
             self.textList_normal.clear()
             self.textList_active.clear()
             self.textList_triggered.clear()
+        texure_n = ""
+        texture_a = ""
+        texture_t = ""
         letter_size = 80 * self.size_letter
         space_size = 16 * self.size_space
         lentext = len(self.text) - self.text.count(" ")
@@ -50,16 +54,24 @@ class CustomButton(UIInteractiveWidget):
         y_offset = self.height // 2 - (112 * self.size_letter // 2)
         for letter in self.text:
             if letter != " ":
+                if letter not in "-_+" and self.change_text:
+                    texture_n = self.alph.get(f"{letter}_n")
+                    texture_a = self.alph.get(f"{letter}_a")
+                    texture_t = self.alph.get(f"{letter}_t")
+                else:
+                    texture_n = self.alph.get(f"{letter}_n")
+                    texture_a = self.alph.get(f"{letter}_n")
+                    texture_t = self.alph.get(f"{letter}_n")
                 self.textList_normal.append(
-                    arcade.Sprite(self.alph.get(f"{letter}_n"), (self.size_letter, self.size_letter),
+                    arcade.Sprite(texture_n, (self.size_letter, self.size_letter),
                                   x_offset + (80 * self.size_letter) // 2,
                                   y_offset + (112 * self.size_letter // 2)))
                 self.textList_active.append(
-                    arcade.Sprite(self.alph.get(f"{letter}_a"), (self.size_letter, self.size_letter),
+                    arcade.Sprite(texture_a, (self.size_letter, self.size_letter),
                                   x_offset + (80 * self.size_letter) // 2,
                                   y_offset + (112 * self.size_letter // 2)))
                 self.textList_triggered.append(
-                    arcade.Sprite(self.alph.get(f"{letter}_t"), (self.size_letter, self.size_letter),
+                    arcade.Sprite(texture_t, (self.size_letter, self.size_letter),
                                   x_offset + (80 * self.size_letter) // 2,
                                   y_offset + (112 * self.size_letter // 2)))
                 x_offset += letter_size + space_size
@@ -82,3 +94,5 @@ class CustomButton(UIInteractiveWidget):
 
     def change(self, value):
         self.is_active = value
+
+
