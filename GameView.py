@@ -32,7 +32,7 @@ class GameView(BaseView):
         self.pause = False
 
         self.data['seed'] = data['seed'] if data['seed'] else randint(1, 100000000)
-        self.data['obj'] = {"Base": [Base("""Сюда х, y базы, не в кортеже""")]}
+        self.data['obj'] = {"Base": [Base()]} #TODO x, y, hp базы игрока
 
         self.world = World(self.data['seed'], self.rows, self.cols, self.tile_size)
         self.world.create_world()
