@@ -1,7 +1,5 @@
 import arcade
 from arcade.gui import UIManager, UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIMessageBox
-import threading
-
 from background import BackgroundView
 from mainView import MainMenuView
 from settingsView import SettingsView
