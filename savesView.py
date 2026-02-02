@@ -29,17 +29,23 @@ class SavesView(BaseView):
         v_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
         h_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
 
-        self.button_back = CustomButton(768 * 0.3, 248 * 0.3, "BACK", 0.3, 0.3, self.window.sprites['button_n'],
-                                        self.window.sprites['button_a'],
-                                        self.window.sprites['button_t'])
+        self.button_back = CustomButton(self.width * 0.15, self.height * 0.075, "BACK", self.width * 0.00019,
+                                        self.width * 0.00019,
+                                        self.window.textures['button_n'],
+                                        self.window.textures['button_a'],
+                                        self.window.textures['button_t'])
 
-        self.button_start = CustomButton(768 * 0.4, 248 * 0.4, "START", 0.4, 0.4, self.window.sprites['button_n'],
-                                         self.window.sprites['button_a'],
-                                         self.window.sprites['button_t'])
+        self.button_start = CustomButton(self.width * 0.2, self.height * 0.1, "START", self.width * 0.00023,
+                                         self.width * 0.00023,
+                                         self.window.textures['button_n'],
+                                         self.window.textures['button_a'],
+                                         self.window.textures['button_t'])
 
-        self.button_delete = CustomButton(768 * 0.4, 248 * 0.4, "DELETE", 0.4, 0.4, self.window.sprites['button_n'],
-                                          self.window.sprites['button_a'],
-                                          self.window.sprites['button_t'])
+        self.button_delete = CustomButton(self.width * 0.2, self.height * 0.1, "DELETE", self.width * 0.00023,
+                                          self.width * 0.00023,
+                                          self.window.textures['button_n'],
+                                          self.window.textures['button_a'],
+                                          self.window.textures['button_t'])
 
         sv_space = UISpace(width=25, height=25, color=(0, 0, 0, 0))
 
@@ -81,8 +87,8 @@ class SavesView(BaseView):
     def delete_triggered(self, event):
         for save in range(len(self.saves) - 1, -1, -1):
             if self.saves[save].is_clicked():
-                filejson = Path(f'./saves/{self.saves[save].data['name']}.json')
-                filesaves = Path(f'./saves/{self.saves[save].data['name']}.saves')
+                filejson = Path(f"./saves/{self.saves[save].data['name']}.json")
+                filesaves = Path(f"./saves/{self.saves[save].data['name']}.sv")
                 filejson.unlink(missing_ok=True)
                 filesaves.unlink(missing_ok=True)
                 self.cv_layout.remove(self.saves[save])
@@ -97,7 +103,7 @@ class SavesView(BaseView):
             self.window.game_view = GameView(self.window, data=clicked[0].data)
             self.window.is_game = True
             self.window.show_view(self.window.game_view)
-        else:
+        elif len(clicked) > 1:
             self.message_box = UIMessageBox(
                 width=300,
                 height=200,
@@ -113,7 +119,7 @@ class SavesView(BaseView):
             x_offset = self.width // 2 - 140
             y_offset = self.height // 2
             for char in "EMPTY":
-                self.surface.draw_texture(x_offset, y_offset, 48, 68, self.window.sprites[f"{char}_n"])
+                self.surface.draw_texture(x_offset, y_offset, 48, 68, self.window.textures[f"{char}_n"])
                 x_offset += 58
         else:
             for save in self.saves:
@@ -135,6 +141,7 @@ class SavesView(BaseView):
                     with open(saves_sv[save].resolve(), "rb") as save_sv:
                         data_sv = pickle.load(save_sv)
                         if data_json == data_sv:
-                            self.saves.append(SaveSlot(data=data_json, slot=save))
+                            self.saves.append(
+                                SaveSlot(data=data_json, slot=save, width=self.width * 0.47, height=self.height * 0.13))
                 except IndexError:
                     continue
