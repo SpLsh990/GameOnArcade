@@ -58,7 +58,7 @@ class GameView(BaseView):
         for obj_type in object_types:
             if obj_type not in self.data['obj']:
                 self.data['obj'][obj_type] = arcade.SpriteList()
-        self.data['obj']['Base'].append(Base(100, 100, 100))
+        self.data['obj']['Base'].append(Base(1000, 1000, 100))
 
         if 'resources' not in self.data:
             self.data['resources'] = {
@@ -165,20 +165,21 @@ class GameView(BaseView):
         if self.pause:
             return
 
-        if self.building and self.building not in self.building_list:
+        if self.building and not self.building in self.building_list:
+            self.building_list = arcade.SpriteList()
             self.building_list.append(self.building)
 
         if self.building:
-            if self.building.collides_with_list(self.collisions):
+            if not self.building.collides_with_list(self.collisions):
                 for i in self.data['obj'].values():
                     if self.building.collides_with_list(i):
-                        self.building.color = (0, 255, 0, 150)
+                        self.building.color = (255, 0, 0, 150)
                         break
                 else:
-                    self.building.color = (255, 0, 0, 150)
+                    self.building.color = (0, 255, 0, 150)
                     return
             else:
-                self.building.color = (0, 255, 0, 150)
+                self.building.color = (255, 0, 0, 150)
 
         self.update_game_objects(dt)
         self.update_enemies(dt)
