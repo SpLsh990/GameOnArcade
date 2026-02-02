@@ -1,5 +1,5 @@
 import arcade
-from arcade.gui import UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIInteractiveWidget
+from arcade.gui import UIAnchorLayout, UIBoxLayout, UISpace
 from baseView import BaseView
 from CustomButton import CustomButton
 
@@ -12,29 +12,37 @@ class MainMenuView(BaseView):
     def create_widget(self):
         c_space = UISpace(width=800, height=100, color=(0, 0, 0, 0))
 
-        self.button_new_game = CustomButton(self.width * 0.2, self.height * 0.1, "NEW GAME",
-                                            size_letter=self.width * 0.00023, size_space=self.width * 0.00023,
-                                            texture_normal=self.window.textures['button_n'],
-                                            texture_active=self.window.textures['button_a'],
-                                            texture_triggered=self.window.textures['button_t'])
+        self.button_new_game = CustomButton(
+            self.width * 0.2, self.height * 0.1, "NEW GAME",
+            size_letter=self.width * 0.00023, size_space=self.width * 0.00023,
+            texture_normal=self.window.textures['button_n'],
+            texture_active=self.window.textures['button_a'],
+            texture_triggered=self.window.textures['button_t']
+        )
 
-        self.button_saves = CustomButton(self.width * 0.2, self.height * 0.1, "SAVES", self.width * 0.00023,
-                                         self.width * 0.00023,
-                                         self.window.textures['button_n'],
-                                         self.window.textures['button_a'],
-                                         self.window.textures['button_t'])
+        self.button_saves = CustomButton(
+            self.width * 0.2, self.height * 0.1, "SAVES",
+            self.width * 0.00023, self.width * 0.00023,
+            self.window.textures['button_n'],
+            self.window.textures['button_a'],
+            self.window.textures['button_t']
+        )
 
-        self.button_settings = CustomButton(self.width * 0.2, self.height * 0.1, "SETTINGS", self.width * 0.00023,
-                                            self.width * 0.00023,
-                                            self.window.textures['button_n'],
-                                            self.window.textures['button_a'],
-                                            self.window.textures['button_t'])
+        self.button_settings = CustomButton(
+            self.width * 0.2, self.height * 0.1, "SETTINGS",
+            self.width * 0.00023, self.width * 0.00023,
+            self.window.textures['button_n'],
+            self.window.textures['button_a'],
+            self.window.textures['button_t']
+        )
 
-        self.button_exit = CustomButton(self.width * 0.2, self.height * 0.1, "EXIT", self.width * 0.00023,
-                                        self.width * 0.00023,
-                                        self.window.textures['button_n'],
-                                        self.window.textures['button_a'],
-                                        self.window.textures['button_t'])
+        self.button_exit = CustomButton(
+            self.width * 0.2, self.height * 0.1, "EXIT",
+            self.width * 0.00023, self.width * 0.00023,
+            self.window.textures['button_n'],
+            self.window.textures['button_a'],
+            self.window.textures['button_t']
+        )
 
         self.c_anchor = UIAnchorLayout()
         self.cv_layout = UIBoxLayout(vertical=True, space_between=10)
@@ -46,7 +54,6 @@ class MainMenuView(BaseView):
         self.cv_layout.add(self.button_exit)
 
         self.c_anchor.add(self.cv_layout)
-
         self.manager.add(self.c_anchor)
 
         self.button_new_game.on_click = lambda event: self.new_game_triggered(event)

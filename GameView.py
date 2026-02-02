@@ -4,35 +4,40 @@ from arcade.gui import UIAnchorLayout, UIBoxLayout
 from world import World
 from random import randint
 from baseView import BaseView
-from pauseView import PauseView
 from TabView import TabView
 from CustomButton import CustomButton
+from classes import *
 
 
 class GameView(BaseView):
     def __init__(self, window, rows=150, cols=150, tile_size=10, data=None):
         super().__init__(window)
+
         self.window = window
         self.rows = rows
         self.cols = cols
         self.tile_size = tile_size
 
-        self.data = data
+        self.data = data or {}
+        self.data['seed'] = data.get('seed', None) if data.get('seed', None) else randint(1, 100000000)
 
         self.textures = {}
-        self.load_textures()
+        self.world_list = arcade.SpriteList()
+        self.collisions = arcade.SpriteList()
 
-        self.worldList = arcade.SpriteList()
+        self.entity_list = arcade.SpriteList()
 
-        self.create_GUI()
-
+        self.wave = self.data.get('wave', 0)
         self.pause = False
+        self.spawn_point = (10 * tile_size, 10 * tile_size)
 
-        self.data['seed'] = data['seed'] if data['seed'] else randint(1, 100000000)
+        self.load_textures()
+        self.initialize_data_structure()
+        self.create_gui()
+
         self.world = World(self.data['seed'], self.rows, self.cols, self.tile_size)
         self.world.create_world()
         self.map, self.mountains, self.water = self.world.get_world()
-        self.collisions = arcade.SpriteList()
 
         self.camera = arcade.camera.Camera2D()
         self.camera_pos = [self.cols // 2 * self.tile_size, self.rows // 2 * self.tile_size]
@@ -43,128 +48,222 @@ class GameView(BaseView):
         self.tab_view = TabView(self, self.window)
 
         self.building = None
-        self.buildingList = arcade.SpriteList()
-        # self.phys_engine = arcade.PhysicsEngineSimple(self.data['entity'], self.collisions)
+        self.building_list = arcade.SpriteList()
+
+    def initialize_data_structure(self):
+        if 'obj' not in self.data:
+            self.data['obj'] = {}
+
+        object_types = ['Base', 'Factory', 'Drill', 'Conveyor', 'Wall', 'Turret']
+        for obj_type in object_types:
+            if obj_type not in self.data['obj']:
+                self.data['obj'][obj_type] = arcade.SpriteList()
+
+        if 'resources' not in self.data:
+            self.data['resources'] = {
+                'coal': 0, 'copper': 0, 'iron': 0, 'lithium': 0,
+                'titanium': 0, 'uranium': 0, 'water': 0, 'energy': 0
+            }
 
     def load_textures(self):
-        self.textures["coal"] = arcade.load_texture("sprites/world/coal.png")
-        self.textures["copper"] = arcade.load_texture("sprites/world/copper.png")
-        self.textures["endworld"] = arcade.load_texture("sprites/world/endworld.png")
-        self.textures["iron"] = arcade.load_texture("sprites/world/iron.png")
-        self.textures["lithium"] = arcade.load_texture("sprites/world/lithium.png")
-        self.textures["mountains"] = arcade.load_texture("sprites/world/mountain.png")
-        self.textures["stone"] = arcade.load_texture("sprites/world/stone.png")
-        self.textures["uranium"] = arcade.load_texture("sprites/world/uranium.png")
-        self.textures["water"] = arcade.load_texture("sprites/world/water.png")
-        self.textures["titanium"] = arcade.load_texture("sprites/world/titanium.png")
-        self.textures["coal_item"] = arcade.load_texture("sprites/icons/coal_icon.png")
-        self.textures["copper_item"] = arcade.load_texture("sprites/icons/copper_icon.png")
-        self.textures["iron_item"] = arcade.load_texture("sprites/icons/iron_icon.png")
-        self.textures["lithium_item"] = arcade.load_texture("sprites/icons/lithium_icon.png")
-        self.textures["titanium_item"] = arcade.load_texture("sprites/icons/titanium_icon.png")
-        self.textures["uranium_item"] = arcade.load_texture("sprites/icons/uranium_icon.png")
-        self.textures["water_item"] = arcade.load_texture("sprites/icons/water_icon.png")
-        self.textures["energy"] = arcade.load_texture("sprites/icons/energy_icon.png")
+        world_textures = {
+            "coal": arcade.load_texture("sprites/world/coal.png"),
+            "copper": arcade.load_texture("sprites/world/copper.png"),
+            "endworld": arcade.load_texture("sprites/world/endworld.png"),
+            "iron": arcade.load_texture("sprites/world/iron.png"),
+            "lithium": arcade.load_texture("sprites/world/lithium.png"),
+            "mountains": arcade.load_texture("sprites/world/mountain.png"),
+            "stone": arcade.load_texture("sprites/world/stone.png"),
+            "uranium": arcade.load_texture("sprites/world/uranium.png"),
+            "water": arcade.load_texture("sprites/world/water.png"),
+            "titanium": arcade.load_texture("sprites/world/titanium.png")
+        }
+
+        item_textures = {
+            "coal_item": arcade.load_texture("sprites/icons/coal_icon.png"),
+            "copper_item": arcade.load_texture("sprites/icons/copper_icon.png"),
+            "iron_item": arcade.load_texture("sprites/icons/iron_icon.png"),
+            "lithium_item": arcade.load_texture("sprites/icons/lithium_icon.png"),
+            "titanium_item": arcade.load_texture("sprites/icons/titanium_icon.png"),
+            "uranium_item": arcade.load_texture("sprites/icons/uranium_icon.png"),
+            "water_item": arcade.load_texture("sprites/icons/water_icon.png"),
+            "energy": arcade.load_texture("sprites/icons/energy_icon.png")
+        }
+
+        self.textures = {**world_textures, **item_textures}
+
+        self.enemy_texture = arcade.make_soft_square_texture(
+            self.tile_size,
+            color=(255, 0, 0),
+        )
 
     def load_world(self):
         for (x, y), item in self.map.items():
-            tile = arcade.Sprite(self.textures[item], 1 / 160 * self.tile_size, x + self.tile_size // 2,
-                                 y + self.tile_size // 2)
+            texture = self.textures.get(item, self.textures["stone"])
+            tile = arcade.Sprite(
+                texture,
+                1 / 160 * self.tile_size,
+                x + self.tile_size // 2,
+                y + self.tile_size // 2
+            )
+
             if item == "mountains" or item == "water":
                 self.collisions.append(tile)
             else:
-                self.worldList.append(tile)
+                self.world_list.append(tile)
 
-    def create_GUI(self):
+    def create_gui(self):
         self.cv_anchor = UIAnchorLayout()
         self.cv_anchor.default_anchor_y = "top"
         self.cv_layout = UIBoxLayout(vertical=False, space_between=10)
-        self.wave_label = CustomButton(self.width * 0.15, self.height * 0.075, f"WAVE - {self.data.get('wave', 0)}",
-                                       size_letter=self.width * 0.00019, size_space=self.width * 0.00019,
-                                       texture_normal=self.window.textures['button_n'], change_text=False)
-        self.button_skip = CustomButton(self.width * 0.045, self.height * 0.075,
-                                        texture_normal=self.window.textures['skip_n'],
-                                        texture_active=self.window.textures['skip_a'],
-                                        texture_triggered=self.window.textures['skip_t'])
+
+        self.wave_label = CustomButton(
+            self.width * 0.15, self.height * 0.075,
+            f"WAVE - {self.wave}",
+            size_letter=self.width * 0.00019,
+            size_space=self.width * 0.00019,
+            texture_normal=self.window.textures['button_n'],
+            change_text=False
+        )
+
+        self.button_skip = CustomButton(
+            self.width * 0.045, self.height * 0.075,
+            texture_normal=self.window.textures['skip_n'],
+            texture_active=self.window.textures['skip_a'],
+            texture_triggered=self.window.textures['skip_t']
+        )
 
         self.cv_layout.add(self.wave_label)
         self.cv_layout.add(self.button_skip)
         self.cv_anchor.add(self.cv_layout)
         self.manager.add(self.cv_anchor)
 
+        self.button_skip.on_click = lambda event: self.start_wave()
+
     def on_draw(self):
         self.clear()
         with self.camera.activate():
-            self.worldList.draw()
+            self.world_list.draw()
             self.collisions.draw()
+
             if self.building:
-                self.buildingList.draw()
-            for spriteList in self.data['obj'].values():
-                spriteList.draw()
+                self.building_list.draw()
+
+            if self.data.get('obj'):
+                for sprite_list in self.data['obj'].values():
+                    sprite_list.draw()
+
+            # Draw enemies
+            self.entity_list.draw()
+
         super().on_draw()
 
     def on_update(self, dt):
         if self.pause:
             return
-        if self.building and self.building not in self.buildingList:
-            self.buildingList.append(self.building)
+
+        if self.building and self.building not in self.building_list:
+            self.building_list.append(self.building)
+
         if self.building:
             if self.building.collides_with_list(self.collisions):
                 self.building.color = (255, 0, 0, 150)
             else:
                 self.building.color = (0, 255, 0, 150)
-        """thread1 = threading.Thread(target=self.log_ent(), args=())
-                thread2 = threading.Thread(target=self.log_obj(), args=("Drill"))
-                thread3 = threading.Thread(target=self.log_obj(), args=("Factory"))
-                thread1.start()
-                thread2.start()
-                thread3.start()
-                thread1.join()
-                thread2.join()
-                thread3.join()"""
-        for i in ["Conveyor", "Drill", "Factory"]:
-            t = threading.Thread(target=self.log_obj(), args=(i))
-            threads.append(t)
-            t.start()
-            t.join()
+
+        self.update_game_objects(dt)
+        self.update_enemies(dt)
+
+        self.wave_label.load_text(f"WAVE - {self.wave}")
+
         self.check_camera()
         self.camera.position = self.camera_pos
         self.camera.zoom = self.camera_zoom
-        # self.phys_engine.update()
 
-    def log_obj(self, obj_type):
-        # TODO Сделать инициализацию логики для пуль
-        """if obj_type == "Bullet":
-            for obj in self.data['obj'][obj_type]:
-                for spriteList in []
-                if arcade.check_for_collision_with_list(obj, self.spriteList):"""
-        for obj in self.data['obj'][obj_type]:
-            if obj.gp <= 0:
-                obj.remove_from_sprite_lists()
-                self.entity.remove(ent)
-            else:
-                obj.logic(self.tile_size, path)
+    def update_game_objects(self, dt):
+        # Update drills
+        for drill in self.data['obj']['Drill']:
+            drill.logic(self.dash, self.tile_size)
+            if drill.storage >= 1:
+                resource_type = drill.out[0] if drill.out else "iron"
+                self.data['resources'][resource_type] = self.data['resources'].get(resource_type, 0) + drill.storage
+                drill.storage = 0
 
-    """def log_ent(self, delta_time=30):
-        for x in range(self.cols):
-            for y in range(self.rows):
-                grid[x * self.tile_size, y * self.tile_size] = 1
-        for i in self.collisions():
-            grid[i] = 0
-        for i in self.world[obj].items():
-            for (x, y), item in i.items():
-                if isinstance(item, Wall):
-                    grid[(x, y)] = 5
-                elif not isinstance(item, Conveyor):
-                    grid[(x, y)] = 2
-        astra = AStar2D(grid)
-        path = astra.find_path(self.spawn, (self.data['obj']['Base'].x, self.data['obj']['Base'].y))
-        for ent in self.entity:
-            if ent.gp <= 0:
-                ent.remove_from_sprite_lists()
-                self.entity.remove(ent)
-            else:
-                ent.logic(self.tile_size, path)"""
+        for factory in self.data['obj']['Factory']:
+            factory.logic(self.dash, self.tile_size)
+            if factory.storage_out >= 1:
+                output_type = factory.out[0] if factory.out else "steel"
+                self.data['resources'][output_type] = self.data['resources'].get(output_type, 0) + factory.storage_out
+                factory.storage_out = 0
+
+        for conveyor in self.data['obj']['Conveyor']:
+            conveyor.logic(self.dash, self.tile_size)
+
+        for turret in self.data['obj']['Turret']:
+            if self.entity_list:
+                nearest_enemy = min(
+                    self.entity_list,
+                    key=lambda e: ((e.center_x - turret.center_x) ** 2 + (e.center_y - turret.center_y) ** 2) ** 0.5
+                )
+                distance = ((nearest_enemy.center_x - turret.center_x) ** 2 +
+                            (nearest_enemy.center_y - turret.center_y) ** 2) ** 0.5
+
+                if distance < 100:
+                    nearest_enemy.hp -= 10 * dt
+                    if nearest_enemy.hp <= 0:
+                        nearest_enemy.remove_from_sprite_lists()
+
+    def update_enemies(self, dt):
+        if not self.data['obj']['Base']:
+            return
+
+        base = self.data['obj']['Base'][0] if self.data['obj']['Base'] else None
+        if not base:
+            return
+
+        enemies_to_remove = []
+        for enemy in self.entity_list:
+            if enemy.hp <= 0:
+                enemies_to_remove.append(enemy)
+                continue
+
+            dx = base.center_x - enemy.center_x
+            dy = base.center_y - enemy.center_y
+            distance = (dx ** 2 + dy ** 2) ** 0.5
+
+            if distance > 0:
+                speed = enemy.speed * dt
+                enemy.center_x += (dx / distance) * speed
+                enemy.center_y += (dy / distance) * speed
+
+            if enemy.collides_with_sprite(base):
+                base.hp -= 10 * dt
+                if base.hp <= 0:
+                    self.pause = True
+                    print("Base destroyed! Game Over")
+
+        for enemy in enemies_to_remove:
+            enemy.remove_from_sprite_lists()
+
+            self.data['resources']['energy'] = self.data['resources'].get('energy', 0) + 5
+
+    def start_wave(self):
+        self.wave += 1
+
+        enemies_to_spawn = 5 + self.wave * 2
+
+        for i in range(enemies_to_spawn):
+            enemy = arcade.Sprite()
+            enemy.center_x = self.spawn_point[0] + (i % 5 * self.tile_size * 2)
+            enemy.center_y = self.spawn_point[1] + (i // 5 * self.tile_size * 2)
+            enemy.hp = 50 + self.wave * 10
+            enemy.speed = 50 + self.wave * 5
+            enemy.texture = self.enemy_texture
+            enemy.scale = 1.0
+
+            self.entity_list.append(enemy)
+
+        print(f"Wave {self.wave} started with {enemies_to_spawn} enemies")
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         if buttons == arcade.MOUSE_BUTTON_RIGHT:
@@ -183,14 +282,19 @@ class GameView(BaseView):
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ESCAPE:
             if self.building:
-                self.buildingList.remove(self.building)
+                self.building_list.remove(self.building)
                 self.building = None
                 return
+
             self.pause = True
             if self.pause:
                 self.window.show_view(self.window.pause_view)
+
         elif key == arcade.key.TAB:
             self.window.show_view(self.tab_view)
+
+        elif key == arcade.key.SPACE:
+            self.start_wave()
 
     def on_mouse_motion(self, x, y, dx, dy):
         if self.building:
@@ -199,12 +303,16 @@ class GameView(BaseView):
             self.building.center_y = wy
 
     def on_mouse_press(self, x, y, button, modifiers):
-        pass
+        if self.building and button == arcade.MOUSE_BUTTON_LEFT:
+            if not self.building.collides_with_list(self.collisions):
+                building_type = self.building.__class__.__name__
+                if building_type in self.data['obj']:
+                    self.building.color = (255, 255, 255, 255)
+                    self.data['obj'][building_type].append(self.building)
+                    self.building = None
 
-    # Ограничение камеры в пределах игрового мира
     def check_camera(self):
         zoom = self.camera.zoom
-
         half_viewport_width = (self.width / 2) / zoom
         half_viewport_height = (self.height / 2) / zoom
 

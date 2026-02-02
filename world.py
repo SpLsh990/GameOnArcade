@@ -10,22 +10,23 @@ def most_frequent_simple(lst):
 
 
 class World:
-    def __init__(self, seed, ROWS, COLS, TILE_SIZE):
-        self.ROWS = ROWS
-        self.COLS = COLS
-        self.TILE_SIZE = TILE_SIZE
+    def __init__(self, seed, rows, cols, tile_size):
+        self.rows = rows
+        self.cols = cols
+        self.tile_size = tile_size
         self.generator = SeedNoiseGenerator(seed)
         self.world = {}
         self.mountains = []
         self.water = []
 
-    def add_item(self, item, limit, octaves=4, seed_offset=0, persistence=0.5, lacunarity=2.0,
-                 scale=0.01):
-        for r in range(2, self.ROWS):
-            for c in range(2, self.COLS):
-                x = self.TILE_SIZE * (c - 1)
-                y = self.TILE_SIZE * (r - 1)
-                value = self.generator.noise(x, y, octaves, seed_offset, persistence, lacunarity, scale)
+    def add_item(self, item, limit, octaves=4, seed_offset=0, persistence=0.5,
+                 lacunarity=2.0, scale=0.01):
+        for r in range(2, self.rows):
+            for c in range(2, self.cols):
+                x = self.tile_size * (c - 1)
+                y = self.tile_size * (r - 1)
+                value = self.generator.noise(x, y, octaves, seed_offset,
+                                             persistence, lacunarity, scale)
                 if value > limit and self.world[(x, y)] == 'stone':
                     self.world[(x, y)] = item
                     if item == "mountains":
@@ -34,33 +35,38 @@ class World:
                         self.water.append((x, y))
 
     def add_bioms(self):
-        for r in range(1, self.ROWS + 1):
-            for c in range(1, self.COLS + 1):
-                x = self.TILE_SIZE * (c - 1)
-                y = self.TILE_SIZE * (r - 1)
-                if r == 1 or r == self.ROWS or c == 1 or c == self.COLS:  # Добавление краев карты
+        for r in range(1, self.rows + 1):
+            for c in range(1, self.cols + 1):
+                x = self.tile_size * (c - 1)
+                y = self.tile_size * (r - 1)
+
+                if r == 1 or r == self.rows or c == 1 or c == self.cols:
                     self.world[x, y] = 'endworld'
                 else:
                     self.world[x, y] = 'stone'
 
     def checking(self):
-        for r in range(2, self.ROWS):
-            for c in range(2, self.COLS):
-                x = self.TILE_SIZE * (c - 1)
-                y = self.TILE_SIZE * (r - 1)
+        for r in range(2, self.rows):
+            for c in range(2, self.cols):
+                x = self.tile_size * (c - 1)
+                y = self.tile_size * (r - 1)
+
                 res = {
                     'center': self.world[(x, y)],
-                    'up': self.world[(x, y + self.TILE_SIZE)],
-                    'down': self.world[(x, y - self.TILE_SIZE)],
-                    'left': self.world[(x - self.TILE_SIZE, y)],
-                    'right': self.world[(x + self.TILE_SIZE, y)]
+                    'up': self.world[(x, y + self.tile_size)],
+                    'down': self.world[(x, y - self.tile_size)],
+                    'left': self.world[(x - self.tile_size, y)],
+                    'right': self.world[(x + self.tile_size, y)]
                 }
-                if res['center'] != res['up'] and res['center'] != res['down']:
-                    if res['center'] != res['left'] and res['center'] != res['right']:
-                        tiles = list(res.values())[1:]
-                        while 'endworld' in tiles:
-                            tiles.pop(tiles.index('endworld'))
-                        self.world[(x, y)] = most_frequent_simple(tiles)
+
+                if (res['center'] != res['up'] and res['center'] != res['down'] and
+                        res['center'] != res['left'] and res['center'] != res['right']):
+
+                    tiles = list(res.values())[1:]
+                    while 'endworld' in tiles:
+                        tiles.pop(tiles.index('endworld'))
+
+                    self.world[(x, y)] = most_frequent_simple(tiles)
 
     def create_world(self):
         self.add_bioms()
