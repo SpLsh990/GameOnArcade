@@ -94,10 +94,15 @@ class TabView(BaseView):
         self.create_inventory_layout()
 
     def create_fabrics_items(self):
-        fabric1 = CustomButton(100, 100, "FAB1", 0.1, 0.1, self.game_view.textures["iron"])
+        fabric1 = CustomButton(100, 100, "smelter", 0.1, 0.1, self.game_view.textures["iron"])
         fabric1.center_x, fabric1.center_y = self.width // 2, self.height // 2
         fabric1.on_click = lambda event: self.item_triggered(event, self.game_view.textures["iron"])
+        fabric2 = CustomButton(100, 100, 'concentrator', 0.1, 0.1, self.game_view.textures['uranium'])
+        fabric2.center_x, fabric2.center_y = self.width // 2 - 100, self.height // 2
+        fabric2.on_click = lambda event: self.item_triggered(event, self.game_view.textures["uranium"])
+
         self.fabrics_manager.add(fabric1)
+        self.fabrics_manager.add(fabric2)
 
     def create_inventory_layout(self):
         self.inventory_manager.clear()
