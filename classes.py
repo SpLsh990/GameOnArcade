@@ -1,18 +1,20 @@
 import heapq
 import math
 import arcade
+import time
 
 
 class BaseObject(arcade.Sprite):
-    def __init__(self, sprite, scale, x, y, hp):
-        super().__init__(sprite, scale)
+    def __init__(self, multiplier, x, y, hp):
+        super().__init__()
         self.x = x
         self.y = y
         self.hp = hp
-
+        self.multiplier = multiplier
 
 class Wall(BaseObject):
     def __init__(self, x, y, material=""):
+        scale = 1
         if material == "copper":
             self.sprite = ""
             hp = 50
@@ -25,7 +27,7 @@ class Wall(BaseObject):
         elif material == "steel":
             self.sprite = ""
             hp = 700
-        super().__init__(self.sprite, x, y, hp)
+        super().__init__(scale, x, y, hp)
         self.material = material
 
     def logic(self, dash, tile_size):
@@ -34,8 +36,9 @@ class Wall(BaseObject):
 
 class Base(BaseObject):
     def __init__(self, x, y, hp):
+        scale = 2
         self.sprite = ""
-        super().__init__(self.sprite, x, y, hp)
+        super().__init__(scale * 10 / 160, x, y, hp)
         self.storage = {}
         self.storage_max = 8000
 
@@ -51,29 +54,27 @@ class Factory(BaseObject):
         self.energy = 0
         self.storage_max = 10
         self.working = False
+        scale = 2  # размер в клетках
         """Задается тип постройки"""
         if type == "smelter":
             self.energy_cost = 15
             self.inp = ["iron", 1.5]  # предмет на вход и нужное количество
-            self.size = 2  # размер в клетках
             self.sprite = ""
             self.out = ["steel", 1]  # предмет на выход и его количество в секунду
         elif type == "concentrator":
             self.energy_cost = 20
             self.inp = ["uranium", 2]
-            self.size = 2
             self.sprite = ""
             self.out = ["enriched_uranium", 0.5]
         elif type == "press":
             self.energy_cost = 10
             self.inp = ["coal", 1]
-            self.size = 2
             self.sprite = ""
             self.out = ["graphite", 0.5]
-        super().__init__(self.sprite, x, y, hp)
+        super().__init__(scale, x, y, hp)
 
     def logic(self, dash, tile_size):
-        self.working = self.storage_inp >= self.inp[1] # and self.energy > 0
+        self.working = self.storage_inp >= self.inp[1]  # and self.energy > 0
         if self.working:
             self.storage_inp -= self.inp[1] / 20
             # self.energy -= self.energy_cost / 20
@@ -83,12 +84,13 @@ class Factory(BaseObject):
 
 class Conveyor(BaseObject):
     def __init__(self, x, y, hp, direction: tuple):
+        scale = 1
         self.storage_max = 5
         self.storage = 0
         self.type = ''
         self.sprite = ""
         self.direction = direction
-        super().__init__(self.sprite, x, y, hp)
+        super().__init__(scale, x, y, hp)
 
     def logic(self, dash, tile_size):
         if self.storage >= 1:
@@ -130,17 +132,17 @@ class Conveyor(BaseObject):
         if self.generating:
             self.storage -= self.inp[1] / 20"""
 
-
 """class PowerLine(BaseObject):
     def __init__(self, x, y, hp):
         super().__init__(self.sprite, x, y, hp)
 """
 
+
 class Drill(BaseObject):
     def __init__(self, x, y, hp, type, world):
         self.storage_max = 10
         self.storage = 0
-        self.size = 2
+        scale = 2
         self.out = []
         if type == "copper":
             self.sprite = ""
@@ -163,9 +165,9 @@ class Drill(BaseObject):
         for i in l:
             if i in self.can_mining:
                 self.mining_speed *= l.count(i) / 4
-                sel.out = [i]
+                self.out = [i]
                 break
-        super().__init__(self.sprite, x, y, hp)
+        super().__init__(scale, x, y, hp)
 
     def logic(self, dash, tile_size):
         self.storage = self.mining_speed / 20
@@ -202,7 +204,6 @@ class Drill(BaseObject):
             nearest = min(nearest, key=lambda p: (p.x - self.x) ** 2 + (p.y - self.y) ** 2)
             angle = math.atan2(self.y - nearest[1], self.x - nearest[0])
             bullet = Bullet(self.x, self.y, angle)"""
-
 
 """class Bullet(arcade.Sprite):
     def __init__(self, x, y, angle):
