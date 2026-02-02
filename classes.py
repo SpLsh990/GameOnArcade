@@ -4,8 +4,8 @@ import arcade
 
 
 class BaseObject(arcade.Sprite):
-    def __init__(self, sprite, x, y, hp):
-        super().__init__(sprite)
+    def __init__(self, sprite, scale, x, y, hp):
+        super().__init__(sprite, scale)
         self.x = x
         self.y = y
         self.hp = hp
@@ -141,6 +141,7 @@ class Drill(BaseObject):
         self.storage_max = 10
         self.storage = 0
         self.size = 2
+        self.out = []
         if type == "copper":
             self.sprite = ""
             self.can_mining = ["copper", "iron", "coal", "lithium"]
@@ -153,14 +154,16 @@ class Drill(BaseObject):
             self.sprite = ""
             self.can_mining = ["copper", "iron", "coal", "titanium", "lithium", "uranium"]
             self.mining_speed = 2
-        way = [(1, 0), (0, 1), (1, 1)]
+        l = []
+        way = [(1, 0), (0, 1), (1, 1), (0, 0)]
         for i in way:
             nx, ny = x + 10 * i[0], y + 10 * i[1]
             l.append(world[nx, ny])
-            l.sort(reverse=True)
+            l.sort(reverse=True, key=lambda x: l.count(x))
         for i in l:
             if i in self.can_mining:
                 self.mining_speed *= l.count(i) / 4
+                sel.out = [i]
                 break
         super().__init__(self.sprite, x, y, hp)
 
