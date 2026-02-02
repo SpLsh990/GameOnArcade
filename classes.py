@@ -5,12 +5,11 @@ import time
 
 
 class BaseObject(arcade.Sprite):
-    def __init__(self, multiplier, x, y, hp):
-        super().__init__()
+    def __init__(self, sprite, scale, x, y, hp):
+        super().__init__(sprite, scale * 10 / 160)
         self.x = x
         self.y = y
         self.hp = hp
-        self.multiplier = multiplier
 
 class Wall(BaseObject):
     def __init__(self, x, y, material=""):
@@ -37,8 +36,8 @@ class Wall(BaseObject):
 class Base(BaseObject):
     def __init__(self, x, y, hp):
         scale = 2
-        self.sprite = ""
-        super().__init__(scale, x, y, hp)
+        self.sprite = "sprites/icons/uranium_icon.png"
+        super().__init__(self.sprite, scale, x, y, hp)
         self.storage = {}
         self.storage_max = 8000
 
@@ -71,7 +70,7 @@ class Factory(BaseObject):
             self.inp = ["coal", 1]
             self.sprite = ""
             self.out = ["graphite", 0.5]
-        super().__init__(scale, x, y, hp)
+        super().__init__(self.sprite, scale, x, y, hp)
 
     def logic(self, dash, tile_size):
         self.working = self.storage_inp >= self.inp[1]  # and self.energy > 0
@@ -90,7 +89,7 @@ class Conveyor(BaseObject):
         self.type = ''
         self.sprite = ""
         self.direction = direction
-        super().__init__(scale, x, y, hp)
+        super().__init__(self.sprite, scale, x, y, hp)
 
     def logic(self, dash, tile_size):
         if self.storage >= 1:

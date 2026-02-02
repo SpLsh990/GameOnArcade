@@ -87,8 +87,8 @@ class SavesView(BaseView):
     def delete_triggered(self, event):
         for save in range(len(self.saves) - 1, -1, -1):
             if self.saves[save].is_clicked():
-                filejson = Path(f'./saves/{self.saves[save].data['name']}.json')
-                filesaves = Path(f'./saves/{self.saves[save].data['name']}.sv')
+                filejson = Path(f"./saves/{self.saves[save].data['name']}.json")
+                filesaves = Path(f"./saves/{self.saves[save].data['name']}.sv")
                 filejson.unlink(missing_ok=True)
                 filesaves.unlink(missing_ok=True)
                 self.cv_layout.remove(self.saves[save])

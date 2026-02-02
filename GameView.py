@@ -1,6 +1,6 @@
 import arcade
 from arcade.gui import UIAnchorLayout, UIBoxLayout
-
+import threading
 from world import World
 from random import randint
 from baseView import BaseView
@@ -58,12 +58,14 @@ class GameView(BaseView):
         for obj_type in object_types:
             if obj_type not in self.data['obj']:
                 self.data['obj'][obj_type] = arcade.SpriteList()
+        self.data['obj']['Base'].append(Base(1000, 1000, 100))
 
         if 'resources' not in self.data:
             self.data['resources'] = {
                 'coal': 0, 'copper': 0, 'iron': 0, 'lithium': 0,
                 'titanium': 0, 'uranium': 0, 'water': 0, 'energy': 0
             }
+        self.data['obj']['Base'][0].storage = self.data['resources']
 
     def load_textures(self):
         world_textures = {
@@ -111,6 +113,7 @@ class GameView(BaseView):
                 self.collisions.append(tile)
             else:
                 self.world_list.append(tile)
+
 
     def create_gui(self):
         self.cv_anchor = UIAnchorLayout()
@@ -162,14 +165,21 @@ class GameView(BaseView):
         if self.pause:
             return
 
-        if self.building and self.building not in self.building_list:
+        if self.building and not self.building in self.building_list:
+            self.building_list = arcade.SpriteList()
             self.building_list.append(self.building)
 
         if self.building:
-            if self.building.collides_with_list(self.collisions):
-                self.building.color = (255, 0, 0, 150)
+            if not self.building.collides_with_list(self.collisions):
+                for i in self.data['obj'].values():
+                    if self.building.collides_with_list(i):
+                        self.building.color = (255, 0, 0, 150)
+                        break
+                else:
+                    self.building.color = (0, 255, 0, 150)
+                    return
             else:
-                self.building.color = (0, 255, 0, 150)
+                self.building.color = (255, 0, 0, 150)
 
         self.update_game_objects(dt)
         self.update_enemies(dt)
@@ -181,23 +191,16 @@ class GameView(BaseView):
         self.camera.zoom = self.camera_zoom
 
     def update_game_objects(self, dt):
-        # Update drills
-        for drill in self.data['obj']['Drill']:
-            drill.logic(self.dash, self.tile_size)
-            if drill.storage >= 1:
-                resource_type = drill.out[0] if drill.out else "iron"
-                self.data['resources'][resource_type] = self.data['resources'].get(resource_type, 0) + drill.storage
-                drill.storage = 0
+        # Update "Conveyor", "Drill", "Factory"
+        threads = []
+        for i in ["Conveyor", "Drill", "Factory"]:
+            t = threading.Thread(target=self.log_obj(i))
+            threads.append(t)
+            t.start()
+            t.join()
 
-        for factory in self.data['obj']['Factory']:
-            factory.logic(self.dash, self.tile_size)
-            if factory.storage_out >= 1:
-                output_type = factory.out[0] if factory.out else "steel"
-                self.data['resources'][output_type] = self.data['resources'].get(output_type, 0) + factory.storage_out
-                factory.storage_out = 0
-
-        for conveyor in self.data['obj']['Conveyor']:
-            conveyor.logic(self.dash, self.tile_size)
+        for key, value in self.data["resources"].items():
+            self.data["resources"][key] = value + self.data['obj']['Base'][0].storage.get(key, 0)
 
         for turret in self.data['obj']['Turret']:
             if self.entity_list:
@@ -212,6 +215,14 @@ class GameView(BaseView):
                     nearest_enemy.hp -= 10 * dt
                     if nearest_enemy.hp <= 0:
                         nearest_enemy.remove_from_sprite_lists()
+
+    def log_obj(self, obj_type):
+        for obj in self.data['obj'][obj_type]:
+            if obj.hp <= 0:
+                obj.remove_from_sprite_lists()
+                self.entity.remove(obj)
+            else:
+                obj.logic(self.dash, self.tile_size)
 
     def update_enemies(self, dt):
         if not self.data['obj']['Base']:
@@ -241,11 +252,6 @@ class GameView(BaseView):
                 if base.hp <= 0:
                     self.pause = True
                     print("Base destroyed! Game Over")
-
-        for enemy in enemies_to_remove:
-            enemy.remove_from_sprite_lists()
-
-            self.data['resources']['energy'] = self.data['resources'].get('energy', 0) + 5
 
     def start_wave(self):
         self.wave += 1
@@ -299,16 +305,20 @@ class GameView(BaseView):
     def on_mouse_motion(self, x, y, dx, dy):
         if self.building:
             wx, wy = self.bind_coords(*self.screen_to_world(x, y))
-            self.building.center_x = wx
-            self.building.center_y = wy
+            self.building.center_x = wx - 5
+            self.building.center_y = wy - 5
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.building and button == arcade.MOUSE_BUTTON_LEFT:
             if not self.building.collides_with_list(self.collisions):
+                for i in self.data['obj'].values():
+                    if self.building.collides_with_list(i):
+                        return
                 building_type = self.building.__class__.__name__
                 if building_type in self.data['obj']:
                     self.building.color = (255, 255, 255, 255)
                     self.data['obj'][building_type].append(self.building)
+                    self.dash[(self.building.center_x, self.building.center_y)] = self.building
                     self.building = None
 
     def check_camera(self):
@@ -325,8 +335,8 @@ class GameView(BaseView):
         self.camera_pos[1] = max(min_y, min(self.camera_pos[1], max_y))
 
     def screen_to_world(self, screen_x, screen_y):
-        world_x = self.camera.x + (screen_x - self.camera.viewport_width / 2) / self.camera.zoom
-        world_y = self.camera.y + (screen_y - self.camera.viewport_height / 2) / self.camera.zoom
+        world_x = self.camera.position[0] + (screen_x - self.camera.viewport_width / 2) / self.camera.zoom
+        world_y = self.camera.position[1] + (screen_y - self.camera.viewport_height / 2) / self.camera.zoom
         return world_x, world_y
 
     def bind_coords(self, x, y):
