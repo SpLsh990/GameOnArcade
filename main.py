@@ -17,10 +17,6 @@ SCREEN_TITLE = '505'
 class Window(arcade.Window):
     def __init__(self, width, height, title, fullscreen, resizable):
         super().__init__(width, height, title, fullscreen, resizable)
-
-        self.setup()
-
-    def setup(self):
         self.background = BackgroundView(self.width, self.height)
         self.back_list = arcade.SpriteList()
         self.back_list.append(self.background)
@@ -29,6 +25,12 @@ class Window(arcade.Window):
 
         self.load_textures()
         self.create_views()
+
+        self.menu_music = arcade.load_sound("music/menu.ogg")
+        self.game_music = arcade.load_sound("music/game.ogg")
+        self.music_player = self.menu_music.play(loop=True, volume=round(
+            0.01 * int(self.settings_view.bool_music and self.settings_view.music), 1))
+        self.current_music = self.menu_music
 
         self.show_view(self.menu_view)
 
@@ -78,24 +80,37 @@ class Window(arcade.Window):
         self.background.update_animation(delta_time)
         if self.current_view:
             self.current_view.on_update(delta_time)
+        if self.music_player:
+            self.music_player.volume = round(
+                0.01 * int(self.settings_view.bool_music and self.settings_view.music), 1)
 
     def on_resize(self, width: int, height: int):
         super().on_resize(width, height)
         self.background.resize(width, height)
 
     def show_view(self, new_view):
-        if isinstance(new_view, GameView):
+        if isinstance(new_view, PauseView):
+            self.background.enable()
+        elif isinstance(new_view, GameView):
             self.background.disable()
             self.is_game = True
             self.game_view = new_view
         else:
             self.background.enable()
-            self.is_game = False
-
         if self.current_view:
             self.current_view.on_hide()
 
         super().show_view(new_view)
+        if self.is_game and self.current_music != self.game_music:
+            arcade.stop_sound(self.music_player)
+            self.music_player = self.game_music.play(loop=True, volume=round(
+                0.01 * int(self.settings_view.bool_music and self.settings_view.music), 1), speed=0.9)
+            self.current_music = self.game_music
+        else:
+            if not self.music_player:
+                self.music_player = self.menu_music.play(loop=True, volume=round(
+                    0.01 * int(self.settings_view.bool_music and self.settings_view.music), 1))
+                self.current_music = self.menu_music
         self.current_view.on_show()
 
 

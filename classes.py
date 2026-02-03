@@ -11,11 +11,10 @@ class BaseObject(arcade.Sprite):
         self.y = y
         self.hp = hp
 
-
 class Wall(BaseObject):
     def __init__(self, sprite, x, y, material="", tile_size=10):
         scale = 1 / 160 * tile_size
-        self.multiplier = 2
+        self.multiplier = 1
         if material == "copper":
             hp = 50
         elif material == "iron":

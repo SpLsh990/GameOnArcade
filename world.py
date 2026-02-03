@@ -16,8 +16,6 @@ class World:
         self.tile_size = tile_size
         self.generator = SeedNoiseGenerator(seed)
         self.world = {}
-        self.mountains = []
-        self.water = []
 
     def add_item(self, item, limit, octaves=4, seed_offset=0, persistence=0.5,
                  lacunarity=2.0, scale=0.01):
@@ -29,21 +27,16 @@ class World:
                                              persistence, lacunarity, scale)
                 if value > limit and self.world[(x, y)] == 'stone':
                     self.world[(x, y)] = item
-                    if item == "mountains":
-                        self.mountains.append((x, y))
-                    elif item == "water":
-                        self.water.append((x, y))
 
     def add_bioms(self):
         for r in range(1, self.rows + 1):
             for c in range(1, self.cols + 1):
                 x = self.tile_size * (c - 1)
                 y = self.tile_size * (r - 1)
-
                 if r == 1 or r == self.rows or c == 1 or c == self.cols:
-                    self.world[x, y] = 'endworld'
+                    self.world[(x, y)] = 'endworld'
                 else:
-                    self.world[x, y] = 'stone'
+                    self.world[(x, y)] = 'stone'
 
     def checking(self):
         for r in range(2, self.rows):
@@ -68,6 +61,16 @@ class World:
 
                     self.world[(x, y)] = most_frequent_simple(tiles)
 
+    def clear_area(self, center_x, center_y, radius):
+        start_x = max(center_x - (radius // 2), 2)
+        end_x = min(center_x + (radius // 2) + 1, self.cols * self.tile_size - 2)
+        start_y = max(center_y - (radius // 2), 2)
+        end_y = min(center_y + (radius // 2) + 1, self.rows * self.tile_size - 2)
+        for y in range(start_y, end_y, self.tile_size):
+            for x in range(start_x, end_x, self.tile_size):
+                self.world[(x, y)] = "stone"
+                print(self.world[(x, y)])
+
     def create_world(self):
         self.add_bioms()
         self.add_item('mountains', 0.6, octaves=2, seed_offset=5000)
@@ -79,6 +82,8 @@ class World:
         self.add_item('titanium', 0.67, octaves=4, seed_offset=4500)
         self.add_item('uranium', 0.69, octaves=4, seed_offset=500)
         self.checking()
+        self.clear_area(100, 100, 10 * self.tile_size)
+        self.clear_area((self.cols - 15) * self.tile_size, (self.rows - 15) * self.tile_size, 10 * self.tile_size)
 
     def get_world(self):
-        return self.world, self.mountains, self.water
+        return self.world

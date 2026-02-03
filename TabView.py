@@ -308,7 +308,6 @@ class TabView(BaseView):
         elif self.is_walls:
             self.game_view.building = Wall(sprite=texture, x=x, y=y, material="copper",
                                            tile_size=self.game_view.tile_size)
-        print(self.game_view.building.scale)
         self.exit_triggered()
 
     def exit_triggered(self):

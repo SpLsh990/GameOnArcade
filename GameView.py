@@ -37,7 +37,7 @@ class GameView(BaseView):
 
         self.world = World(self.data['seed'], self.rows, self.cols, self.tile_size)
         self.world.create_world()
-        self.map, self.mountains, self.water = self.world.get_world()
+        self.map = self.world.get_world()
 
         self.camera = arcade.camera.Camera2D()
         self.camera_pos = [self.cols // 2 * self.tile_size, self.rows // 2 * self.tile_size]
@@ -58,12 +58,12 @@ class GameView(BaseView):
         for obj_type in object_types:
             if obj_type not in self.data['obj']:
                 self.data['obj'][obj_type] = arcade.SpriteList()
-        self.data['obj']['Base'].append(Base(self.textures['core'], 100, 100, 100, self.tile_size))
+        self.data['obj']['Base'].append(Base(self.textures['core'], 95, 95, 100, self.tile_size))
 
         if 'resources' not in self.data:
             self.data['resources'] = {
                 'coal': 0, 'copper': 0, 'iron': 0, 'lithium': 0,
-                'titanium': 0, 'uranium': 0, 'water': 0, 'energy': 0
+                'titanium': 0, 'uranium': 0, 'water': 0, 'energy': 0, 'graphite': 0, 'steel_plate': 0
             }
         self.data['obj']['Base'][0].storage = self.data['resources']
 
@@ -89,7 +89,9 @@ class GameView(BaseView):
             "titanium_item": arcade.load_texture("sprites/icons/titanium_icon.png"),
             "uranium_item": arcade.load_texture("sprites/icons/uranium_icon.png"),
             "water_item": arcade.load_texture("sprites/icons/water_icon.png"),
-            "energy": arcade.load_texture("sprites/icons/energy_icon.png")
+            "energy": arcade.load_texture("sprites/icons/energy_icon.png"),
+            "steel_plate": arcade.load_texture("sprites/icons/steel_plate.png"),
+            "graphite": arcade.load_texture("sprites/icons/graphite_plate.png")
         }
 
         building_textures = {
