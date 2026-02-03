@@ -5,28 +5,26 @@ import time
 
 
 class BaseObject(arcade.Sprite):
-    def __init__(self, sprite, scale, x, y, hp):
-        super().__init__(sprite, scale * 10 / 160)
+    def __init__(self, sprite, x, y, hp, scale):
+        super().__init__(sprite, center_x=x, center_y=y, scale=scale)
         self.x = x
         self.y = y
         self.hp = hp
 
+
 class Wall(BaseObject):
-    def __init__(self, x, y, material=""):
-        scale = 1
+    def __init__(self, sprite, x, y, material="", tile_size=10):
+        scale = 1 / 160 * tile_size
+        self.multiplier = 2
         if material == "copper":
-            self.sprite = ""
             hp = 50
         elif material == "iron":
             hp = 200
-            self.sprite = ""
         elif material == "titanium":
             hp = 400
-            self.sprite = ""
         elif material == "steel":
-            self.sprite = ""
             hp = 700
-        super().__init__(scale, x, y, hp)
+        super().__init__(sprite, x, y, hp, scale)
         self.material = material
 
     def logic(self, dash, tile_size):
@@ -34,10 +32,10 @@ class Wall(BaseObject):
 
 
 class Base(BaseObject):
-    def __init__(self, x, y, hp):
-        scale = 2
-        self.sprite = "sprites/icons/uranium_icon.png"
-        super().__init__(self.sprite, scale, x, y, hp)
+    def __init__(self, sprite, x, y, hp, tile_size):
+        scale = 1 / 160 * tile_size
+        self.multiplier = 1
+        super().__init__(sprite, x, y, hp, scale)
         self.storage = {}
         self.storage_max = 8000
 
@@ -46,31 +44,29 @@ class Base(BaseObject):
 
 
 class Factory(BaseObject):
-    def __init__(self, x, y, hp, type):
-        self.type = type
+    def __init__(self, sprite, x, y, hp, building_type, tile_size):
+        self.building_type = building_type
         self.storage_inp = 0
         self.storage_out = 0
         self.energy = 0
         self.storage_max = 10
         self.working = False
-        scale = 2  # размер в клетках
+        self.multiplier = 2
+        scale = 1 / 160 * tile_size
         """Задается тип постройки"""
         if type == "smelter":
             self.energy_cost = 15
             self.inp = ["iron", 1.5]  # предмет на вход и нужное количество
-            self.sprite = ""
             self.out = ["steel", 1]  # предмет на выход и его количество в секунду
         elif type == "concentrator":
             self.energy_cost = 20
             self.inp = ["uranium", 2]
-            self.sprite = ""
             self.out = ["enriched_uranium", 0.5]
         elif type == "press":
             self.energy_cost = 10
             self.inp = ["coal", 1]
-            self.sprite = ""
             self.out = ["graphite", 0.5]
-        super().__init__(self.sprite, scale, x, y, hp)
+        super().__init__(sprite, x, y, hp, scale)
 
     def logic(self, dash, tile_size):
         self.working = self.storage_inp >= self.inp[1]  # and self.energy > 0
@@ -82,14 +78,14 @@ class Factory(BaseObject):
 
 
 class Conveyor(BaseObject):
-    def __init__(self, x, y, hp, direction: tuple):
-        scale = 1
+    def __init__(self, sprite, x, y, hp, direction: tuple, tile_size):
+        scale = 1 / 160 * tile_size
         self.storage_max = 5
         self.storage = 0
+        self.multiplier = 1
         self.type = ''
-        self.sprite = ""
         self.direction = direction
-        super().__init__(self.sprite, scale, x, y, hp)
+        super().__init__(sprite, x, y, hp, scale)
 
     def logic(self, dash, tile_size):
         if self.storage >= 1:
@@ -138,21 +134,20 @@ class Conveyor(BaseObject):
 
 
 class Drill(BaseObject):
-    def __init__(self, x, y, hp, type, world):
+    def __init__(self, sprite, x, y, hp, building_type, world, tile_size):
+        self.building_type = building_type
         self.storage_max = 10
         self.storage = 0
-        scale = 2
+        self.multiplier = 2
+        scale = 1 / 160 * tile_size
         self.out = []
         if type == "copper":
-            self.sprite = ""
             self.can_mining = ["copper", "iron", "coal", "lithium"]
             self.mining_speed = 0.5
         elif type == "steel":
-            self.sprite = ""
-            self.can_mining = ["copper", "iron", "coal", "titanium", "lithium", ]
+            self.can_mining = ["copper", "iron", "coal", "titanium", "lithium"]
             self.mining_speed = 1
         elif type == "lazer":
-            self.sprite = ""
             self.can_mining = ["copper", "iron", "coal", "titanium", "lithium", "uranium"]
             self.mining_speed = 2
         l = []
@@ -166,7 +161,7 @@ class Drill(BaseObject):
                 self.mining_speed *= l.count(i) / 4
                 self.out = [i]
                 break
-        super().__init__(scale, x, y, hp)
+        super().__init__(sprite, x, y, hp, scale)
 
     def logic(self, dash, tile_size):
         self.storage = self.mining_speed / 20

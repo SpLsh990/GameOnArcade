@@ -11,7 +11,7 @@ from pauseView import PauseView
 
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
-SCREEN_TITLE = '404'
+SCREEN_TITLE = '505'
 
 
 class Window(arcade.Window):
@@ -26,18 +26,11 @@ class Window(arcade.Window):
         self.back_list.append(self.background)
 
         self.textures = {}
-        self.music = {}
-        self.music_player = None
 
         self.load_textures()
-        self.load_music()
         self.create_views()
 
         self.show_view(self.menu_view)
-
-    def load_music(self):
-        self.music["menu"] = arcade.load_sound("music/menu.ogg")
-        self.music["game"] = arcade.load_sound("music/game.ogg")
 
     def load_textures(self):
         for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":

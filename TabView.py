@@ -1,7 +1,8 @@
 import arcade
+
 from CustomButton import CustomButton
 from arcade.gui import UIAnchorLayout, UIBoxLayout, UIManager, UILabel
-from math import radians, cos
+from math import radians, cos, ceil
 from classes import *
 from baseView import BaseView
 
@@ -34,6 +35,8 @@ class TabView(BaseView):
 
         self.is_inventory = False
         self.inventory_manager = UIManager()
+
+        self.inventory_created = False
 
         self.game_view = view
         self.textures = {}
@@ -94,17 +97,26 @@ class TabView(BaseView):
         self.create_inventory_layout()
 
     def create_fabrics_items(self):
+        """СЮДА ВОТКНЕШЬ СВОЙ АЛГОРИТМ ЗАГРУЗКИ"""
         fabric1 = CustomButton(100, 100, "smelter", 0.1, 0.1, self.game_view.textures["iron"])
         fabric1.center_x, fabric1.center_y = self.width // 2, self.height // 2
-        fabric1.on_click = lambda event: self.item_triggered(event, self.game_view.textures["iron"])
+        fabric1.on_click = lambda event: self.item_triggered(event, fabric1.texture_normal)
         fabric2 = CustomButton(100, 100, 'concentrator', 0.1, 0.1, self.game_view.textures['uranium'])
         fabric2.center_x, fabric2.center_y = self.width // 2 - 100, self.height // 2
-        fabric2.on_click = lambda event: self.item_triggered(event, self.game_view.textures["uranium"])
+        fabric2.on_click = lambda event: self.item_triggered(event, fabric2.texture_normal)
+        wall1 = CustomButton(100, 100, "copper_wall", 0.1, 0.1, self.game_view.textures['copper_wall'])
+        wall1.center_x, wall1.center_y = self.width // 2, self.height // 2
+        wall1.on_click = lambda event: self.item_triggered(event, wall1.texture_normal)
 
+        self.walls_manager.add(wall1)
         self.fabrics_manager.add(fabric1)
         self.fabrics_manager.add(fabric2)
 
     def create_inventory_layout(self):
+        if self.inventory_created:
+            self.update_inventory()
+            return
+
         self.inventory_manager.clear()
 
         resources = [
@@ -119,28 +131,32 @@ class TabView(BaseView):
         ]
 
         main_container = UIAnchorLayout(width=self.width, height=self.height)
-
         columns_layout = UIBoxLayout(vertical=False, space_between=100)
+        resources_per_column = 4
+        num_columns = ceil(len(resources) / resources_per_column)
 
-        resources_per_column = 3
-        num_columns = (len(resources) + resources_per_column - 1) // resources_per_column
+        self.inventory_labels = {}
 
         for col_index in range(num_columns):
             column_layout = UIBoxLayout(vertical=True, space_between=30)
 
-            start_idx = col_index * resources_per_column
-            end_idx = min(start_idx + resources_per_column, len(resources))
+            start = col_index * resources_per_column
+            end = min(start + resources_per_column, len(resources))
 
-            for i in range(start_idx, end_idx):
+            for i in range(start, end):
                 resource_name, texture_key = resources[i]
 
-                resource_row = self.create_resource_row(resource_name, texture_key)
+                resource_row, amount_label = self.create_resource_row(resource_name, texture_key)
                 column_layout.add(resource_row)
+
+                self.inventory_labels[resource_name] = amount_label
 
             columns_layout.add(column_layout)
 
         main_container.add(columns_layout)
         self.inventory_manager.add(main_container)
+
+        self.inventory_created = True
 
     def create_resource_row(self, resource_name, texture_key):
         row_layout = UIBoxLayout(vertical=False, space_between=20)
@@ -152,15 +168,8 @@ class TabView(BaseView):
                 size_letter=0.1, size_space=0.1,
                 texture_normal=self.game_view.textures[texture_key]
             )
-        else:
-            icon_button = CustomButton(
-                width=50, height=50,
-                text=resource_name[:3].upper(),
-                size_letter=0.15, size_space=0.15,
-                texture_normal=self.window.textures['button_n']
-            )
 
-        resource_amount = self.game_view.data['resources'].get(resource_name, 0)
+        resource_amount = self.game_view.data.get('resources', {}).get(resource_name, 0)
         amount_text = f"{resource_amount}"
 
         amount_label = UILabel(
@@ -169,14 +178,29 @@ class TabView(BaseView):
             height=50,
             font_size=20,
             font_name="Arial",
-            text_color=(255, 255, 255),
+            text_color=(255, 255, 0),
             align="left"
         )
 
         row_layout.add(icon_button)
         row_layout.add(amount_label)
 
-        return row_layout
+        return row_layout, amount_label
+
+    def update_inventory(self):
+        if not self.inventory_created or not self.inventory_labels:
+            return
+
+        resources_data = self.game_view.data.get('resources', {})
+
+        for resource_name, label in self.inventory_labels.items():
+            amount = resources_data.get(resource_name, 0)
+            label.text = f"{amount}"
+
+            if amount <= 0:
+                label.text_color = (255, 0, 0)
+            else:
+                label.text_color = (255, 255, 0)
 
     def on_draw(self):
         self.game_view.on_draw()
@@ -273,24 +297,18 @@ class TabView(BaseView):
         x, y = self.width // 2, self.height // 2
 
         if self.is_fabrics:
-            self.game_view.building = Factory(x=x, y=y, hp=100, type="smelter")
-            self.game_view.building.texture = texture
-
+            self.game_view.building = Factory(sprite=texture, x=x, y=y, hp=100, building_type="smelter",
+                                              tile_size=self.game_view.tile_size)
         elif self.is_conveyors:
-            self.game_view.building = Conveyor(x=x, y=y, hp=100, direction=(0, 0))
-            self.game_view.building.texture = texture
-
+            self.game_view.building = Conveyor(sprite=texture, x=x, y=y, hp=100, direction=(0, 0),
+                                               tile_size=self.game_view.tile_size)
         elif self.is_drills:
-            self.game_view.building = Drill(x=x, y=y, hp=100, type="copper", world=self.game_view.map)
-            self.game_view.building.texture = texture
-
+            self.game_view.building = Drill(sprite=texture, x=x, y=y, hp=100, building_type="copper", world=self.game_view.map,
+                                            tile_size=self.game_view.tile_size)
         elif self.is_walls:
-            self.game_view.building = Wall(x=x, y=y, material="copper")
-            self.game_view.building.texture = texture
-
-        if self.game_view.building:
-            self.game_view.building.scale = 1 / 160 * self.game_view.tile_size * self.game_view.building.multiplier
-
+            self.game_view.building = Wall(sprite=texture, x=x, y=y, material="copper",
+                                           tile_size=self.game_view.tile_size)
+        print(self.game_view.building.scale)
         self.exit_triggered()
 
     def exit_triggered(self):

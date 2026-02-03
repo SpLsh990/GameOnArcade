@@ -58,7 +58,7 @@ class GameView(BaseView):
         for obj_type in object_types:
             if obj_type not in self.data['obj']:
                 self.data['obj'][obj_type] = arcade.SpriteList()
-        self.data['obj']['Base'].append(Base(1000, 1000, 100))
+        self.data['obj']['Base'].append(Base(self.textures['core'], 100, 100, 100, self.tile_size))
 
         if 'resources' not in self.data:
             self.data['resources'] = {
@@ -92,12 +92,20 @@ class GameView(BaseView):
             "energy": arcade.load_texture("sprites/icons/energy_icon.png")
         }
 
-        self.textures = {**world_textures, **item_textures}
-
-        self.enemy_texture = arcade.make_soft_square_texture(
-            self.tile_size,
-            color=(255, 0, 0),
-        )
+        building_textures = {
+            "copper_drill": arcade.load_texture("sprites/buildings/copper_drill.png"),
+            "steel_drill": arcade.load_texture("sprites/buildings/steel_drill.png"),
+            "lazer_drill": arcade.load_texture("sprites/buildings/lazer_drill.png"),
+            "copper_wall": arcade.load_texture("sprites/buildings/copper_wall.png"),
+            "steel_wall": arcade.load_texture("sprites/buildings/steel_drill.png"),
+            "titanium_wall": arcade.load_texture("sprites/buildings/titanium_wall.png"),
+            "iron_wall": arcade.load_texture("sprites/buildings/iron_wall.png"),
+            "core": arcade.load_texture("sprites/buildings/core.png"),
+            "smelter": arcade.load_texture("sprites/buildings/smelter.png"),
+            "concentrator": arcade.load_texture("sprites/buildings/concentrator.png"),
+            "press": arcade.load_texture("sprites/buildings/press.png")
+        }
+        self.textures = {**world_textures, **item_textures, **building_textures}
 
     def load_world(self):
         for (x, y), item in self.map.items():
@@ -113,7 +121,6 @@ class GameView(BaseView):
                 self.collisions.append(tile)
             else:
                 self.world_list.append(tile)
-
 
     def create_gui(self):
         self.cv_anchor = UIAnchorLayout()
@@ -182,7 +189,6 @@ class GameView(BaseView):
                 self.building.color = (255, 0, 0, 150)
 
         self.update_game_objects(dt)
-        self.update_enemies(dt)
 
         self.wave_label.load_text(f"WAVE - {self.wave}")
 
@@ -224,53 +230,6 @@ class GameView(BaseView):
             else:
                 obj.logic(self.dash, self.tile_size)
 
-    def update_enemies(self, dt):
-        if not self.data['obj']['Base']:
-            return
-
-        base = self.data['obj']['Base'][0] if self.data['obj']['Base'] else None
-        if not base:
-            return
-
-        enemies_to_remove = []
-        for enemy in self.entity_list:
-            if enemy.hp <= 0:
-                enemies_to_remove.append(enemy)
-                continue
-
-            dx = base.center_x - enemy.center_x
-            dy = base.center_y - enemy.center_y
-            distance = (dx ** 2 + dy ** 2) ** 0.5
-
-            if distance > 0:
-                speed = enemy.speed * dt
-                enemy.center_x += (dx / distance) * speed
-                enemy.center_y += (dy / distance) * speed
-
-            if enemy.collides_with_sprite(base):
-                base.hp -= 10 * dt
-                if base.hp <= 0:
-                    self.pause = True
-                    print("Base destroyed! Game Over")
-
-    def start_wave(self):
-        self.wave += 1
-
-        enemies_to_spawn = 5 + self.wave * 2
-
-        for i in range(enemies_to_spawn):
-            enemy = arcade.Sprite()
-            enemy.center_x = self.spawn_point[0] + (i % 5 * self.tile_size * 2)
-            enemy.center_y = self.spawn_point[1] + (i // 5 * self.tile_size * 2)
-            enemy.hp = 50 + self.wave * 10
-            enemy.speed = 50 + self.wave * 5
-            enemy.texture = self.enemy_texture
-            enemy.scale = 1.0
-
-            self.entity_list.append(enemy)
-
-        print(f"Wave {self.wave} started with {enemies_to_spawn} enemies")
-
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         if buttons == arcade.MOUSE_BUTTON_RIGHT:
             self.camera_pos[0] -= dx / self.camera_zoom
@@ -304,7 +263,7 @@ class GameView(BaseView):
 
     def on_mouse_motion(self, x, y, dx, dy):
         if self.building:
-            wx, wy = self.bind_coords(*self.screen_to_world(x, y))
+            wx, wy = self.bind_coords(*self.screen_to_world(x, y), self.building.multiplier)
             self.building.center_x = wx - 5
             self.building.center_y = wy - 5
 
@@ -339,7 +298,8 @@ class GameView(BaseView):
         world_y = self.camera.position[1] + (screen_y - self.camera.viewport_height / 2) / self.camera.zoom
         return world_x, world_y
 
-    def bind_coords(self, x, y):
-        bind_x = x - x % self.tile_size + self.tile_size // 2
-        bind_y = y - y % self.tile_size + self.tile_size // 2
+    def bind_coords(self, x, y, multiplier=1):
+        normalization = self.tile_size // 2 if multiplier % 2 == 0 else 0
+        bind_x = x - x % self.tile_size + normalization
+        bind_y = y - y % self.tile_size + normalization
         return bind_x, bind_y
