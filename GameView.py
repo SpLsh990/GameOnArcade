@@ -31,6 +31,7 @@ class GameView(BaseView):
         self.wave = self.data.get('wave', 0)
         self.pause = False
         self.spawn_point = (10 * tile_size, 10 * tile_size)
+        self.dash = {}
 
         self.load_textures()
         self.initialize_data_structure()
@@ -45,7 +46,6 @@ class GameView(BaseView):
         self.camera_zoom = 3.0
 
         self.load_world()
-        self.dash = {}
         self.tab_view = TabView(self, self.window)
 
         self.building = None
@@ -60,6 +60,9 @@ class GameView(BaseView):
             if obj_type not in self.data['obj']:
                 self.data['obj'][obj_type] = arcade.SpriteList()
         self.data['obj']['Base'].append(Base(self.textures['core'], 95, 95, 100, self.tile_size))
+        for i in range(3):
+            for j in range(3):
+                self.dash[(80 + self.tile_size * i, 80 + self.tile_size * j)] = self.data['obj']['Base'][0]
 
         if 'resources' not in self.data:
             self.data['resources'] = {
@@ -205,7 +208,7 @@ class GameView(BaseView):
     def update_game_objects(self, dt):
         # Update "Conveyor", "Drill", "Factory"
         threads = []
-        for i in ["Conveyor", "Drill", "Factory"]:
+        for i in ["Conveyor", "Drill", "Factory", "Base"]:
             t = threading.Thread(target=self.log_obj(i))
             threads.append(t)
             t.start()
@@ -298,7 +301,9 @@ class GameView(BaseView):
                     if isinstance(self.building, Drill):
                         self.building.setup()
                     self.data['obj'][building_type].append(self.building)
-                    self.dash[(self.building.x, self.building.y)] = self.building
+                    for i in range(self.building.multiplier):
+                        for j in range(self.building.multiplier):
+                            self.dash[(self.building.x + self.tile_size * i, self.building.y + self.tile_size * j)] = self.building
                     if isinstance(self.building, Conveyor):
                         self.tab_view.item_triggered(texture=self.building.texture, direction=self.building.direction)
                     else:

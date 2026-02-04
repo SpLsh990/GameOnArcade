@@ -39,8 +39,7 @@ class Base(BaseObject):
         self.storage_max = 8000
 
     def logic(self, dash, tile_size):
-        print(self.storage)
-
+        pass
 
 class Factory(BaseObject):
     def __init__(self, sprite, x, y, hp, building_type, tile_size):
@@ -90,20 +89,21 @@ class Conveyor(BaseObject):
 
     def logic(self, dash, tile_size):
         print(self.storage)
-        if self.storage >= 1:
+        if self.storage > 1:
             a = dash.get((self.x + self.direction[0] * tile_size, self.y + self.direction[1] * tile_size))
             if a:
-                if a.storage < self.storage_max:
-                    if isinstance(a, Conveyor):
-                        a.storage = 1 if a.storage < 1 and a.type != self.type else (a.storage + 1)
-                        self.storage -= 1
-                        a.type = self.type
-                    elif isinstance(a, Base):
+                if isinstance(a, Base):
+                    if a.storage.get(self.type, 0) <= a.storage_max:
                         a.storage[self.type] = a.storage.get(self.type, 0) + 1
                         self.storage -= 1
+                elif a.storage < a.storage_max:
+                    if isinstance(a, Conveyor):
+                        a.storage = 1 if a.storage <=    1 and a.type != self.type else (a.storage + 1)
+                        self.storage -= 1
+                        a.type = self.type
                     elif isinstance(a, Factory) or isinstance(a, Powerstation):
                         if a.inp[0] == self.type:
-                            a.storage_inp = a.storage_inp + 10 / 20
+                            a.storage_inp = a.storage_inp + 1
                             self.storage -= 1
 
 
@@ -167,7 +167,7 @@ class Drill(BaseObject):
                 self.mining_speed *= l.count(i) / 4
                 self.out = [i]
                 break
-        print(l)
+        print(l, self.mining_speed)
 
     def logic(self, dash, tile_size):
         if self.storage_out < self.storage_max:
