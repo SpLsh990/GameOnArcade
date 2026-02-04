@@ -9,8 +9,8 @@ from savesView import SavesView
 from GameView import GameView
 from pauseView import PauseView
 
-SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 800
+SCREEN_WIDTH = 1920
+SCREEN_HEIGHT = 1080
 SCREEN_TITLE = '505'
 
 
@@ -115,7 +115,7 @@ class Window(arcade.Window):
 
 
 def main():
-    window = Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, False, False)
+    window = Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, True, False)
     arcade.run()
 
 
