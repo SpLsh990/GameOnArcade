@@ -8,7 +8,8 @@ from TabView import TabView
 from CustomButton import CustomButton
 from classes import *
 from datetime import date
-
+import json
+import pickle
 
 class GameView(BaseView):
     def __init__(self, window, rows=150, cols=150, tile_size=10, data=None):
@@ -74,12 +75,18 @@ class GameView(BaseView):
 
                 for obj in data:
                     if group == "Factory":
-                        self.data['obj'][group].append(Factory(self.textures[obj[3]], obj[0], obj[1], obj[2], obj[3]))
+                        self.data['obj'][group].append(Factory(self.textures[obj[3]], obj[0], obj[1], obj[2], obj[3], self.tile_size))
                     elif group == "Drill":
-                        self.data['obj'][group].append(Drill(self.textures[f"{obj[3]}_drill"], obj[0], obj[1], obj[2], self.map))
-                    elif gruop == "Wall":
-                        self.data['obj'][group].append(Wall())
-    #TODO ДОПИШИ ЗДЕСЬ ПО АНАЛОГИИ ОСТАЛЬНЫЕ КЛАССЫ
+                        self.data['obj'][group].append(
+                            Drill(self.textures[f"{obj[3]}_drill"], obj[0], obj[1], obj[2], self.map, self.tile_size))
+                    elif group == "Wall":
+                        self.data['obj'][group].append(Wall(self.textures[f"{obj[2]}_wall"], obj[0], obj[1], obj[2], self.tile_size))
+                    elif group == "Conveyor":
+                        self.data["obj"][group].append(
+                            Conveyor(self.textures["conveyor"], obj[0], obj[1], obj[2], obj[3], self.tile_size))
+                    elif group == "Base":
+                        self.data["obj"][group].append(Base(self.textures['core'], obj[0], obj[1], obj[2], self.tile_size))
+
     def load_textures(self):
         world_textures = {
             "coal": arcade.load_texture("sprites/world/coal.png"),
@@ -108,6 +115,7 @@ class GameView(BaseView):
         }
 
         building_textures = {
+            "conveyor": arcade.load_texture("sprites/buildings/conveyor.png"),
             "copper_drill": arcade.load_texture("sprites/buildings/copper_drill.png"),
             "steel_drill": arcade.load_texture("sprites/buildings/steel_drill.png"),
             "lazer_drill": arcade.load_texture("sprites/buildings/lazer_drill.png"),
@@ -118,7 +126,8 @@ class GameView(BaseView):
             "core": arcade.load_texture("sprites/buildings/core.png"),
             "smelter": arcade.load_texture("sprites/buildings/smelter.png"),
             "concentrator": arcade.load_texture("sprites/buildings/concentrator.png"),
-            "press": arcade.load_texture("sprites/buildings/press.png")
+            "press": arcade.load_texture("sprites/buildings/press.png"),
+            "core": arcade.load_texture("sprites/buildings/core.png")
         }
         self.textures = {**world_textures, **item_textures, **building_textures}
 
@@ -132,7 +141,7 @@ class GameView(BaseView):
                 y + self.tile_size // 2
             )
 
-            if item == "mountains" or item == "water":
+            if item == "mountains" or item == "water" or item == ("endworld"):
                 self.collisions.append(tile)
             else:
                 self.world_list.append(tile)
@@ -275,7 +284,6 @@ class GameView(BaseView):
 
         elif key == arcade.key.SPACE:
             self.start_wave()
-
     def on_mouse_motion(self, x, y, dx, dy):
         if self.building:
             wx, wy = self.bind_coords(*self.screen_to_world(x, y), self.building.multiplier)
@@ -322,9 +330,10 @@ class GameView(BaseView):
     def save(self):
         self.data['date'] = str(date.today())
         savedata = self.data.copy()
-        savedata['obj'] = []
-        with open(f"saves/{self.data.get('name')}.json", "w", encoding="utf-8") as js, open(
-                f"saves/{self.data.get('name')}.sv", "wb") as bn:
+        savedata["obj"] = {}
+        for group in ["Base", "Factory", "Drill", "Conveyor", "Wall", "Turret"]:
+            savedata["obj"][group] = []
+        with open(f"saves/{self.data.get('name')}.json", "w", encoding="utf-8") as js:
             for group in self.data['obj'].keys():
                 for obj in self.data['obj'][group]:
                     if group == "Factory" or group == "Drill":
@@ -333,6 +342,7 @@ class GameView(BaseView):
                         savedata['obj'][group].append((obj.center_x, obj.center_y, obj.material))
                     elif group == "Base":
                         savedata['obj'][group].append((obj.center_x, obj.center_y, obj.hp))
+                    elif group == "Conveyor":
+                        savedata['obj'][group].append((obj.center_x, obj.center_y, obj.hp, obj.direction))
 
-            json.dump(savedata, file, indent=4, ensure_ascii=False)
-            pickle.dump(savedata, file)
+            json.dump(savedata, js, indent=4, ensure_ascii=False)

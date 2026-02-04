@@ -115,7 +115,7 @@ class Window(arcade.Window):
 
 
 def main():
-    window = Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, True, False)
+    window = Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, False, False)
     arcade.run()
 
 

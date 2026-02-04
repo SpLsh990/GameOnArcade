@@ -1,8 +1,6 @@
 import arcade
 from arcade.gui import UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIInteractiveWidget
 from baseView import BaseView
-import json
-import pickle
 import time
 from random import randint
 from CustomButton import CustomButton

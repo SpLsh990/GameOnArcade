@@ -1,6 +1,5 @@
 import arcade
 import json
-import pickle
 from pathlib import Path
 from arcade.gui import UITextureButton, UIAnchorLayout, UIBoxLayout, UISpace, UIInteractiveWidget, Surface, UIMessageBox
 from arcade import Section
@@ -130,18 +129,10 @@ class SavesView(BaseView):
     def load_saves(self):
         path = Path("./saves")
         saves_json = list(path.glob("*.json"))
-        saves_sv = list(path.glob("*.sv"))
         for i in range(len(self.saves) - 1, -1, -1):
             self.cv_layout.remove(self.saves[i])
             del self.saves[i]
         for save in range(len(saves_json)):
             with open(saves_json[save].resolve(), "r", encoding='utf-8') as save_json:
                 data_json = json.load(save_json)
-                try:
-                    with open(saves_sv[save].resolve(), "rb") as save_sv:
-                        data_sv = pickle.load(save_sv)
-                        if data_json == data_sv:
-                            self.saves.append(
-                                SaveSlot(data=data_json, slot=save, width=self.width * 0.47, height=self.height * 0.13))
-                except IndexError:
-                    continue
+                self.saves.append(SaveSlot(data=data_json, slot=save, width=self.width * 0.47, height=self.height * 0.13))
