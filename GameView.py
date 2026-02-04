@@ -279,8 +279,8 @@ class GameView(BaseView):
     def on_mouse_motion(self, x, y, dx, dy):
         if self.building:
             wx, wy = self.bind_coords(*self.screen_to_world(x, y), self.building.multiplier)
-            self.building.center_x = wx - 5
-            self.building.center_y = wy - 5
+            self.building.center_x = wx
+            self.building.center_y = wy
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.building and button == arcade.MOUSE_BUTTON_LEFT:
@@ -291,6 +291,12 @@ class GameView(BaseView):
                 building_type = self.building.__class__.__name__
                 if building_type in self.data['obj']:
                     self.building.color = (255, 255, 255, 255)
+                    wx, wy = self.bind_coords(*self.screen_to_world(x, y), self.building.multiplier)
+                    self.building.x = wx - self.tile_size // 2 if self.building.multiplier % 2 == 1 else wx - self.tile_size
+                    self.building.y = wy - self.tile_size // 2 if self.building.multiplier % 2 == 1 else wy - self.tile_size
+                    print(self.building.x, self.building.y, wx, wy)
+                    if isinstance(self.building, Drill):
+                        self.building.setup()
                     self.data['obj'][building_type].append(self.building)
                     self.dash[(self.building.center_x, self.building.center_y)] = self.building
                     if isinstance(self.building, Conveyor):
@@ -320,7 +326,7 @@ class GameView(BaseView):
         return world_x, world_y
 
     def bind_coords(self, x, y, multiplier=1):
-        normalization = self.tile_size // 2 if multiplier % 2 == 0 else 0
+        normalization = self.tile_size//2 if multiplier % 2 == 1 else 0
         bind_x = x - x % self.tile_size + normalization
         bind_y = y - y % self.tile_size + normalization
         return bind_x, bind_y

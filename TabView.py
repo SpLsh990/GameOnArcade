@@ -102,7 +102,7 @@ class TabView(BaseView):
         fabric1.on_click = lambda event: self.item_triggered(self.game_view.textures["smelter"], type='smelter')
         self.fabrics_manager.add(fabric1)
 
-        fabric2 = CustomButton(100, 100, 'Концентратор', 0.1, 0.1, self.game_view.textures['concentrator'])
+        fabric2 = CustomButton(100, 100, 'concentrator', 0.1, 0.1, self.game_view.textures['concentrator'])
         fabric2.center_x, fabric2.center_y = self.width // 2, self.height // 2
         fabric2.on_click = lambda event: self.item_triggered(self.game_view.textures['concentrator'], type='concentrator')
         self.fabrics_manager.add(fabric2)
@@ -145,7 +145,7 @@ class TabView(BaseView):
         self.drills_manager.add(drill2)
 
         drill3 = CustomButton(100, 100, 'Lazer drill', 0.1, 0.1, self.game_view.textures['lazer_drill'])
-        drill3.center_x, drill3.center_y = self.width // 2 - 150, self.height // 2
+        drill3.center_x, drill3.center_y = self.width // 2 + 150, self.height // 2
         drill3.on_click = lambda event: self.item_triggered(self.game_view.textures['lazer_drill'], type='lazer')
         self.drills_manager.add(drill3)
 

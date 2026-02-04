@@ -68,7 +68,6 @@ class Factory(BaseObject):
         super().__init__(sprite, x, y, hp, scale)
 
     def logic(self, dash, tile_size):
-        print(self.storage)
         self.working = self.storage_inp >= self.inp[1] and self.storage_out < self.storage_max  # and self.energy > 0
         if self.working:
             self.storage_inp -= self.inp[1] / 60
@@ -85,7 +84,7 @@ class Conveyor(BaseObject):
         self.multiplier = 1
         self.type = ''
         self.direction = direction
-        super().__init__(sprite, x + 5, y + 5, hp, scale)
+        super().__init__(sprite, x, y, hp, scale)
         l = [(1, 0), (0, -1), (-1, 0), (0, 1)]
         self.angle = 90 * (l.index(direction) % 4)
 
@@ -153,23 +152,26 @@ class Drill(BaseObject):
         elif building_type == "lazer":
             self.can_mining = ["copper", "iron", "coal", "titanium", "lithium", "uranium"]
             self.mining_speed = 2
+        self.world = world
+        super().__init__(sprite, x, y, hp, scale)
+
+    def setup(self):
         l = []
         way = [(1, 0), (0, 1), (1, 1), (0, 0)]
         for i in way:
-            nx, ny = x + 10 * i[0], y + 10 * i[1]
-            l.append(world[nx, ny])
+            nx, ny = self.x + 10 * i[0], self.y + 10 * i[1]
+            l.append(self.world[nx, ny])
             l.sort(reverse=True, key=lambda x: l.count(x))
         for i in l:
             if i in self.can_mining:
                 self.mining_speed *= l.count(i) / 4
                 self.out = [i]
                 break
-        super().__init__(sprite, x, y, hp, scale)
+        print(l)
 
     def logic(self, dash, tile_size):
         if self.storage < self.storage_max:
             self.storage = self.storage + self.mining_speed / 60
-        print(self.storage)
         if self.storage >= 1:
             output_find(self, dash, tile_size)
 
