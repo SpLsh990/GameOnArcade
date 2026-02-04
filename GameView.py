@@ -1,12 +1,13 @@
-import arcade
-from arcade.gui import UIAnchorLayout, UIBoxLayout
 import threading
-from world import World
 from random import randint
-from baseView import BaseView
-from TabView import TabView
+
+from arcade.gui import UIAnchorLayout, UIBoxLayout
+
 from CustomButton import CustomButton
+from TabView import TabView
+from baseView import BaseView
 from classes import *
+from world import World
 
 
 class GameView(BaseView):
@@ -105,8 +106,10 @@ class GameView(BaseView):
             "core": arcade.load_texture("sprites/buildings/core.png"),
             "smelter": arcade.load_texture("sprites/buildings/smelter.png"),
             "concentrator": arcade.load_texture("sprites/buildings/concentrator.png"),
-            "press": arcade.load_texture("sprites/buildings/press.png")
+            "press": arcade.load_texture("sprites/buildings/press.png"),
+            "conveyor": arcade.load_texture("sprites/buildings/conveyor.png"),
         }
+
         self.textures = {**world_textures, **item_textures, **building_textures}
 
     def load_world(self):
@@ -118,8 +121,7 @@ class GameView(BaseView):
                 x + self.tile_size // 2,
                 y + self.tile_size // 2
             )
-
-            if item == "mountains" or item == "water":
+            if item == "mountains" or item == "water" or item == "endworld":
                 self.collisions.append(tile)
             else:
                 self.world_list.append(tile)
@@ -178,6 +180,17 @@ class GameView(BaseView):
             self.building_list = arcade.SpriteList()
             self.building_list.append(self.building)
 
+        thread1 = threading.Thread(target=self.build_collide())
+        thread2 = threading.Thread(target=self.check_camera())
+        thread1.start()
+        thread2.start()
+        self.update_game_objects(dt)
+
+        self.wave_label.load_text(f"WAVE - {self.wave}")
+        thread1.join()
+        thread2.join()
+
+    def build_collide(self):
         if self.building:
             if not self.building.collides_with_list(self.collisions):
                 for i in self.data['obj'].values():
@@ -186,17 +199,8 @@ class GameView(BaseView):
                         break
                 else:
                     self.building.color = (0, 255, 0, 150)
-                    return
             else:
                 self.building.color = (255, 0, 0, 150)
-
-        self.update_game_objects(dt)
-
-        self.wave_label.load_text(f"WAVE - {self.wave}")
-
-        self.check_camera()
-        self.camera.position = self.camera_pos
-        self.camera.zoom = self.camera_zoom
 
     def update_game_objects(self, dt):
         # Update "Conveyor", "Drill", "Factory"
@@ -249,7 +253,7 @@ class GameView(BaseView):
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ESCAPE:
             if self.building:
-                self.building_list.remove(self.building)
+                self.building_list = arcade.SpriteList()
                 self.building = None
                 return
 
@@ -258,10 +262,19 @@ class GameView(BaseView):
                 self.window.show_view(self.window.pause_view)
 
         elif key == arcade.key.TAB:
+            self.tab_view.exit_triggered()
+            self.building_list = arcade.SpriteList()
+            self.building = None
             self.window.show_view(self.tab_view)
 
         elif key == arcade.key.SPACE:
             self.start_wave()
+
+        elif key == arcade.key.R:
+            if isinstance(self.building, Conveyor):
+                l = [(1, 0), (0, -1), (-1, 0), (0, 1)]
+                self.building.direction = l[(l.index(self.building.direction) + 1) % 4]
+                self.building.angle += 90
 
     def on_mouse_motion(self, x, y, dx, dy):
         if self.building:
@@ -280,7 +293,10 @@ class GameView(BaseView):
                     self.building.color = (255, 255, 255, 255)
                     self.data['obj'][building_type].append(self.building)
                     self.dash[(self.building.center_x, self.building.center_y)] = self.building
-                    self.building = None
+                    if isinstance(self.building, Conveyor):
+                        self.tab_view.item_triggered(texture=self.building.texture, direction=self.building.direction)
+                    else:
+                        self.tab_view.item_triggered(texture=self.building.texture, type=self.building.building_type)
 
     def check_camera(self):
         zoom = self.camera.zoom
@@ -294,6 +310,9 @@ class GameView(BaseView):
 
         self.camera_pos[0] = max(min_x, min(self.camera_pos[0], max_x))
         self.camera_pos[1] = max(min_y, min(self.camera_pos[1], max_y))
+
+        self.camera.position = self.camera_pos
+        self.camera.zoom = self.camera_zoom
 
     def screen_to_world(self, screen_x, screen_y):
         world_x = self.camera.position[0] + (screen_x - self.camera.viewport_width / 2) / self.camera.zoom

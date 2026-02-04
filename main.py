@@ -22,17 +22,24 @@ class Window(arcade.Window):
         self.back_list.append(self.background)
 
         self.textures = {}
+        self.music = {}
+        self.music_player = None
 
         self.load_textures()
+        self.load_music()
         self.create_views()
 
-        self.menu_music = arcade.load_sound("music/menu.ogg")
-        self.game_music = arcade.load_sound("music/game.ogg")
+        self.menu_music = arcade.load_sound("music/menu.wav")
+        self.game_music = arcade.load_sound("music/game.wav")
         self.music_player = self.menu_music.play(loop=True, volume=round(
             0.01 * int(self.settings_view.bool_music and self.settings_view.music), 1))
         self.current_music = self.menu_music
 
         self.show_view(self.menu_view)
+
+    def load_music(self):
+        self.music["menu"] = arcade.load_sound("music/menu.wav")
+        self.music["game"] = arcade.load_sound("music/game.wav")
 
     def load_textures(self):
         for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":

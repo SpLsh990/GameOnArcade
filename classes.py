@@ -12,19 +12,19 @@ class BaseObject(arcade.Sprite):
         self.hp = hp
 
 class Wall(BaseObject):
-    def __init__(self, sprite, x, y, material="", tile_size=10):
+    def __init__(self, sprite, x, y, building_type="", tile_size=10):
+        self.building_type = building_type
         scale = 1 / 160 * tile_size
         self.multiplier = 1
-        if material == "copper":
+        if building_type == "copper":
             hp = 50
-        elif material == "iron":
+        elif building_type == "iron":
             hp = 200
-        elif material == "titanium":
+        elif building_type == "titanium":
             hp = 400
-        elif material == "steel":
+        elif building_type == "steel":
             hp = 700
         super().__init__(sprite, x, y, hp, scale)
-        self.material = material
 
     def logic(self, dash, tile_size):
         pass
@@ -39,7 +39,7 @@ class Base(BaseObject):
         self.storage_max = 8000
 
     def logic(self, dash, tile_size):
-        pass
+        print(self.storage)
 
 
 class Factory(BaseObject):
@@ -53,24 +53,25 @@ class Factory(BaseObject):
         self.multiplier = 2
         scale = 1 / 160 * tile_size
         """Задается тип постройки"""
-        if type == "smelter":
+        if building_type == "smelter":
             self.energy_cost = 15
             self.inp = ["iron", 1.5]  # предмет на вход и нужное количество
             self.out = ["steel", 1]  # предмет на выход и его количество в секунду
-        elif type == "concentrator":
+        elif building_type == "concentrator":
             self.energy_cost = 20
             self.inp = ["uranium", 2]
             self.out = ["enriched_uranium", 0.5]
-        elif type == "press":
+        elif building_type == "press":
             self.energy_cost = 10
             self.inp = ["coal", 1]
             self.out = ["graphite", 0.5]
         super().__init__(sprite, x, y, hp, scale)
 
     def logic(self, dash, tile_size):
-        self.working = self.storage_inp >= self.inp[1]  # and self.energy > 0
+        print(self.storage)
+        self.working = self.storage_inp >= self.inp[1] and self.storage_out < self.storage_max  # and self.energy > 0
         if self.working:
-            self.storage_inp -= self.inp[1] / 20
+            self.storage_inp -= self.inp[1] / 60
             # self.energy -= self.energy_cost / 20
             if self.storage_out >= 1:
                 output_find(self, dash, tile_size)
@@ -84,9 +85,12 @@ class Conveyor(BaseObject):
         self.multiplier = 1
         self.type = ''
         self.direction = direction
-        super().__init__(sprite, x, y, hp, scale)
+        super().__init__(sprite, x + 5, y + 5, hp, scale)
+        l = [(1, 0), (0, -1), (-1, 0), (0, 1)]
+        self.angle = 90 * (l.index(direction) % 4)
 
     def logic(self, dash, tile_size):
+        print(self.storage)
         if self.storage >= 1:
             a = dash[self.x + self.direction[0] * tile_size, self.y + self.direction[1] * tile_size]
             if a:
@@ -97,11 +101,11 @@ class Conveyor(BaseObject):
                         a.type = self.type
                     elif isinstance(a, Base):
                         a.storage[self.type] = a.storage.get(self.type, 0) + 1
-                        self.storage -= 10 / 20
+                        self.storage -= 1
                     elif isinstance(a, Factory) or isinstance(a, Powerstation):
                         if a.inp[0] == self.type:
                             a.storage_inp = a.storage_inp + 10 / 20
-                            self.storage -= 10 / 20
+                            self.storage -= 1
 
 
 """class Powerstation(BaseObject):
@@ -140,13 +144,13 @@ class Drill(BaseObject):
         self.multiplier = 2
         scale = 1 / 160 * tile_size
         self.out = []
-        if type == "copper":
+        if building_type == "copper":
             self.can_mining = ["copper", "iron", "coal", "lithium"]
             self.mining_speed = 0.5
-        elif type == "steel":
+        elif building_type == "steel":
             self.can_mining = ["copper", "iron", "coal", "titanium", "lithium"]
             self.mining_speed = 1
-        elif type == "lazer":
+        elif building_type == "lazer":
             self.can_mining = ["copper", "iron", "coal", "titanium", "lithium", "uranium"]
             self.mining_speed = 2
         l = []
@@ -163,7 +167,9 @@ class Drill(BaseObject):
         super().__init__(sprite, x, y, hp, scale)
 
     def logic(self, dash, tile_size):
-        self.storage = self.mining_speed / 20
+        if self.storage < self.storage_max:
+            self.storage = self.storage + self.mining_speed / 60
+        print(self.storage)
         if self.storage >= 1:
             output_find(self, dash, tile_size)
 
@@ -218,25 +224,27 @@ def output_find(self, dash, tile_size):
     for w in way:
         dx, dy = w
         if dx == 0:
-            dy *= self.size
-            for i in range(self.size):
+            dy *= self.multiplier
+            for i in range(self.multiplier):
                 dx += i
-                a = dash[(self.x + dx * tile_size, self.y + dy * tile_size)]
-                if isinstance(a, Conveyor):
-                    if a.direction != way[way.index(w) + 2 % 4] and a.storage_max > a.storage:
-                        a.storage = a.storage + 1
-                        self.storage_inp -= 1
-                        a.type = self.out[0]
+                a = dash.get((self.x + dx * tile_size, self.y + dy * tile_size))
+                if a:
+                    if isinstance(a, Conveyor):
+                        if a.direction != way[way.index(w) + 2 % 4] and a.storage_max > a.storage:
+                            a.storage = a.storage + 1
+                            self.storage_inp -= 1
+                            a.type = self.out[0]
         else:
-            dx *= self.size
-            for i in range(self.size):
+            dx *= self.multiplier
+            for i in range(self.multiplier):
                 dy += i
-                a = dash[(self.x + dx * tile_size, self.y + dy * tile_size)]
-                if isinstance(a, Conveyor):
-                    if a.direction != way[way.index(w) + 2 % 4] and a.storage_max > a.storage:
-                        a.storage = a.storage + 1
-                        self.storage -= 1
-                        a.type = self.out[0]
+                a = dash.get((self.x + dx * tile_size, self.y + dy * tile_size))
+                if a:
+                    if isinstance(a, Conveyor):
+                        if a.direction != way[way.index(w) + 2 % 4] and a.storage_max > a.storage:
+                            a.storage = a.storage + 1
+                            self.storage -= 1
+                            a.type = self.out[0]
 
 
 class AStar2D:
