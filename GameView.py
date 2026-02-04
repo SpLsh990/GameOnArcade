@@ -298,7 +298,7 @@ class GameView(BaseView):
                     if isinstance(self.building, Drill):
                         self.building.setup()
                     self.data['obj'][building_type].append(self.building)
-                    self.dash[(self.building.center_x, self.building.center_y)] = self.building
+                    self.dash[(self.building.x, self.building.y)] = self.building
                     if isinstance(self.building, Conveyor):
                         self.tab_view.item_triggered(texture=self.building.texture, direction=self.building.direction)
                     else:

@@ -91,7 +91,7 @@ class Conveyor(BaseObject):
     def logic(self, dash, tile_size):
         print(self.storage)
         if self.storage >= 1:
-            a = dash[self.x + self.direction[0] * tile_size, self.y + self.direction[1] * tile_size]
+            a = dash.get((self.x + self.direction[0] * tile_size, self.y + self.direction[1] * tile_size))
             if a:
                 if a.storage < self.storage_max:
                     if isinstance(a, Conveyor):
@@ -139,7 +139,7 @@ class Drill(BaseObject):
     def __init__(self, sprite, x, y, hp, building_type, world, tile_size):
         self.building_type = building_type
         self.storage_max = 10
-        self.storage = 0
+        self.storage_out = 0
         self.multiplier = 2
         scale = 1 / 160 * tile_size
         self.out = []
@@ -170,9 +170,9 @@ class Drill(BaseObject):
         print(l)
 
     def logic(self, dash, tile_size):
-        if self.storage < self.storage_max:
-            self.storage = self.storage + self.mining_speed / 60
-        if self.storage >= 1:
+        if self.storage_out < self.storage_max:
+            self.storage_out = self.storage_out + self.mining_speed / 60
+        if self.storage_out >= 1:
             output_find(self, dash, tile_size)
 
 
@@ -226,26 +226,26 @@ def output_find(self, dash, tile_size):
     for w in way:
         dx, dy = w
         if dx == 0:
-            dy *= self.multiplier
+            dy *= self.multiplier if dy      > 0 else 1
             for i in range(self.multiplier):
                 dx += i
                 a = dash.get((self.x + dx * tile_size, self.y + dy * tile_size))
                 if a:
                     if isinstance(a, Conveyor):
-                        if a.direction != way[way.index(w) + 2 % 4] and a.storage_max > a.storage:
+                        if a.direction != way[(way.index(w) + 2) % 4] and a.storage_max > a.storage:
                             a.storage = a.storage + 1
-                            self.storage_inp -= 1
+                            self.storage_out -= 1
                             a.type = self.out[0]
         else:
-            dx *= self.multiplier
+            dx *= self.multiplier if dx > 0 else 1
             for i in range(self.multiplier):
                 dy += i
                 a = dash.get((self.x + dx * tile_size, self.y + dy * tile_size))
                 if a:
                     if isinstance(a, Conveyor):
-                        if a.direction != way[way.index(w) + 2 % 4] and a.storage_max > a.storage:
+                        if a.direction != way[(way.index(w) + 2) % 4] and a.storage_max > a.storage:
                             a.storage = a.storage + 1
-                            self.storage -= 1
+                            self.storage_out -= 1
                             a.type = self.out[0]
 
 
