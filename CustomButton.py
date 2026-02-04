@@ -94,5 +94,3 @@ class CustomButton(UIInteractiveWidget):
 
     def change(self, value):
         self.is_active = value
-
-

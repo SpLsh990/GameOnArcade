@@ -9,7 +9,7 @@ from savesView import SavesView
 from GameView import GameView
 from pauseView import PauseView
 
-SCREEN_WIDTH = 1200
+SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 800
 SCREEN_TITLE = '505'
 

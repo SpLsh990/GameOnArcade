@@ -4,8 +4,8 @@ from arcade.gui import UIManager, UIAnchorLayout, UIBoxLayout, UITextureButton, 
 
 
 class SaveSlot(UIInteractiveWidget):
-    def __init__(self, data=None, slot=None, width=800, height=100):
-        super().__init__(width=width, height=height)
+    def __init__(self, data=None, slot=None):
+        super().__init__(width=800, height=100)
         self.data = data
         self.slot = slot
         self.clicked = False
@@ -25,8 +25,8 @@ class SaveSlot(UIInteractiveWidget):
             self.sprites[i] = arcade.load_texture(f"sprites/digits_normal/{i}.png")
         for i in ['', '-', '+', '_']:
             self.sprites[i] = arcade.load_texture(f"sprites/signs/{i}.png")
-        self.sprites['slot_n'] = arcade.load_texture("sprites/buttons/slot/slot_normal.png")
-        self.sprites['slot_a'] = arcade.load_texture("sprites/buttons/slot/slot_selected.png")
+        self.sprites['slot_n'] = arcade.load_texture("sprites/buttons/button/button_normal.png")
+        self.sprites['slot_a'] = arcade.load_texture("sprites/buttons/button/button_selected.png")
 
     def update_data(self, data):
         self.data = data
@@ -62,12 +62,13 @@ class SaveSlot(UIInteractiveWidget):
             if i in self.alph:
                 char = self.sprites.get(i, None)
                 if char:
-                    self.nameList.append(arcade.Sprite(char, 0.175, x_offset + 7, y_offset + 10))
+                    self.nameList.append(arcade.Sprite(char,0.175, x_offset + 7, y_offset + 10))
                 x_offset += 24
             else:
                 x_offset += 10
 
         self.nameList.draw()
+
 
         x_offset = self.width - 50
         for i in self.date[::-1]:

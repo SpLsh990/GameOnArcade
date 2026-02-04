@@ -1,15 +1,18 @@
-import arcade
 from arcade.gui import UIAnchorLayout, UIBoxLayout
 import threading
-from world import World
-from random import randint
-from baseView import BaseView
-from TabView import TabView
-from CustomButton import CustomButton
-from classes import *
-from datetime import date
 import json
-import pickle
+import threading
+from datetime import date
+from random import randint
+
+from arcade.gui import UIAnchorLayout, UIBoxLayout
+
+from CustomButton import CustomButton
+from TabView import TabView
+from baseView import BaseView
+from classes import *
+from world import World
+
 
 class GameView(BaseView):
     def __init__(self, window, rows=150, cols=150, tile_size=10, data=None):
@@ -24,6 +27,7 @@ class GameView(BaseView):
         self.data['seed'] = data.get('seed', None) if data.get('seed', None) else randint(1, 100000000)
 
         self.textures = {}
+        self.dash = {}
         self.world_list = arcade.SpriteList()
         self.collisions = arcade.SpriteList()
 
@@ -46,7 +50,6 @@ class GameView(BaseView):
         self.camera_zoom = 3.0
 
         self.load_world()
-        self.dash = {}
         self.tab_view = TabView(self, self.window)
 
         self.building = None
@@ -61,6 +64,9 @@ class GameView(BaseView):
                 if obj_type not in self.data['obj']:
                     self.data['obj'][obj_type] = arcade.SpriteList()
             self.data['obj']['Base'].append(Base(self.textures['core'], 95, 95, 100, self.tile_size))
+            for i in range(3):
+                for j in range(3):
+                    self.dash[(80 + self.tile_size * i, 80 + self.tile_size * j)] = self.data['obj']['Base'][0]
 
             if 'resources' not in self.data:
                 self.data['resources'] = {
@@ -75,17 +81,20 @@ class GameView(BaseView):
 
                 for obj in data:
                     if group == "Factory":
-                        self.data['obj'][group].append(Factory(self.textures[obj[3]], obj[0], obj[1], obj[2], obj[3], self.tile_size))
+                        self.data['obj'][group].append(
+                            Factory(self.textures[obj[3]], obj[0], obj[1], obj[2], obj[3], self.tile_size))
                     elif group == "Drill":
                         self.data['obj'][group].append(
                             Drill(self.textures[f"{obj[3]}_drill"], obj[0], obj[1], obj[2], self.map, self.tile_size))
                     elif group == "Wall":
-                        self.data['obj'][group].append(Wall(self.textures[f"{obj[2]}_wall"], obj[0], obj[1], obj[2], self.tile_size))
+                        self.data['obj'][group].append(
+                            Wall(self.textures[f"{obj[2]}_wall"], obj[0], obj[1], obj[2], self.tile_size))
                     elif group == "Conveyor":
                         self.data["obj"][group].append(
                             Conveyor(self.textures["conveyor"], obj[0], obj[1], obj[2], obj[3], self.tile_size))
                     elif group == "Base":
-                        self.data["obj"][group].append(Base(self.textures['core'], obj[0], obj[1], obj[2], self.tile_size))
+                        self.data["obj"][group].append(
+                            Base(self.textures['core'], obj[0], obj[1], obj[2], self.tile_size))
 
     def load_textures(self):
         world_textures = {
@@ -141,7 +150,7 @@ class GameView(BaseView):
                 y + self.tile_size // 2
             )
 
-            if item == "mountains" or item == "water" or item == ("endworld"):
+            if item == "mountains" or item == "water" or item == "endworld":
                 self.collisions.append(tile)
             else:
                 self.world_list.append(tile)
@@ -192,7 +201,7 @@ class GameView(BaseView):
 
         super().on_draw()
 
-    def on_update(self, dt):
+    def on_update(self, dt=1/60):
         if self.pause:
             return
 
@@ -200,6 +209,17 @@ class GameView(BaseView):
             self.building_list = arcade.SpriteList()
             self.building_list.append(self.building)
 
+        thread1 = threading.Thread(target=self.build_collide())
+        thread2 = threading.Thread(target=self.check_camera())
+        thread1.start()
+        thread2.start()
+        self.update_game_objects(dt)
+
+        self.wave_label.load_text(f"WAVE - {self.wave}")
+        thread1.join()
+        thread2.join()
+
+    def build_collide(self):
         if self.building:
             if not self.building.collides_with_list(self.collisions):
                 for i in self.data['obj'].values():
@@ -208,17 +228,8 @@ class GameView(BaseView):
                         break
                 else:
                     self.building.color = (0, 255, 0, 150)
-                    return
             else:
                 self.building.color = (255, 0, 0, 150)
-
-        self.update_game_objects(dt)
-
-        self.wave_label.load_text(f"WAVE - {self.wave}")
-
-        self.check_camera()
-        self.camera.position = self.camera_pos
-        self.camera.zoom = self.camera_zoom
 
     def update_game_objects(self, dt):
         # Update "Conveyor", "Drill", "Factory"
@@ -230,7 +241,7 @@ class GameView(BaseView):
             t.join()
 
         for key, value in self.data["resources"].items():
-            self.data["resources"][key] = value + self.data['obj']['Base'][0].storage.get(key, 0)
+            self.data["resources"][key] = self.data['obj']['Base'][0].storage.get(key, 0)
 
         for turret in self.data['obj']['Turret']:
             if self.entity_list:
@@ -250,7 +261,7 @@ class GameView(BaseView):
         for obj in self.data['obj'][obj_type]:
             if obj.hp <= 0:
                 obj.remove_from_sprite_lists()
-                self.entity.remove(obj)
+                self.dash.remove(obj)
             else:
                 obj.logic(self.dash, self.tile_size)
 
@@ -271,7 +282,7 @@ class GameView(BaseView):
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ESCAPE:
             if self.building:
-                self.building_list.remove(self.building)
+                self.building_list = arcade.SpriteList()
                 self.building = None
                 return
 
@@ -280,15 +291,26 @@ class GameView(BaseView):
                 self.window.show_view(self.window.pause_view)
 
         elif key == arcade.key.TAB:
+            print(self.data['obj']['Base'][0].storage)
+            self.tab_view.exit_triggered()
+            self.building_list = arcade.SpriteList()
+            self.building = None
             self.window.show_view(self.tab_view)
 
         elif key == arcade.key.SPACE:
             self.start_wave()
+
+        elif key == arcade.key.R:
+            if isinstance(self.building, Conveyor):
+                l = [(1, 0), (0, -1), (-1, 0), (0, 1)]
+                self.building.direction = l[(l.index(self.building.direction) + 1) % 4]
+                self.building.angle += 90
+
     def on_mouse_motion(self, x, y, dx, dy):
         if self.building:
             wx, wy = self.bind_coords(*self.screen_to_world(x, y), self.building.multiplier)
-            self.building.center_x = wx - 5
-            self.building.center_y = wy - 5
+            self.building.center_x = wx
+            self.building.center_y = wy
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.building and button == arcade.MOUSE_BUTTON_LEFT:
@@ -299,9 +321,20 @@ class GameView(BaseView):
                 building_type = self.building.__class__.__name__
                 if building_type in self.data['obj']:
                     self.building.color = (255, 255, 255, 255)
+                    wx, wy = self.bind_coords(*self.screen_to_world(x, y), self.building.multiplier)
+                    self.building.x = wx - self.tile_size // 2 if self.building.multiplier % 2 == 1 else wx - self.tile_size
+                    self.building.y = wy - self.tile_size // 2 if self.building.multiplier % 2 == 1 else wy - self.tile_size
+                    print(self.building.x, self.building.y, wx, wy)
+                    if isinstance(self.building, Drill):
+                        self.building.setup()
                     self.data['obj'][building_type].append(self.building)
-                    self.dash[(self.building.center_x, self.building.center_y)] = self.building
-                    self.building = None
+                    for i in range(self.building.multiplier):
+                        for j in range(self.building.multiplier):
+                            self.dash[(self.building.x + self.tile_size * i, self.building.y + self.tile_size * j)] = self.building
+                    if isinstance(self.building, Conveyor):
+                        self.tab_view.item_triggered(texture=self.building.texture, direction=self.building.direction)
+                    else:
+                        self.tab_view.item_triggered(texture=self.building.texture, type=self.building.building_type)
 
     def check_camera(self):
         zoom = self.camera.zoom
@@ -316,13 +349,16 @@ class GameView(BaseView):
         self.camera_pos[0] = max(min_x, min(self.camera_pos[0], max_x))
         self.camera_pos[1] = max(min_y, min(self.camera_pos[1], max_y))
 
+        self.camera.position = self.camera_pos
+        self.camera.zoom = self.camera_zoom
+
     def screen_to_world(self, screen_x, screen_y):
         world_x = self.camera.position[0] + (screen_x - self.camera.viewport_width / 2) / self.camera.zoom
         world_y = self.camera.position[1] + (screen_y - self.camera.viewport_height / 2) / self.camera.zoom
         return world_x, world_y
 
     def bind_coords(self, x, y, multiplier=1):
-        normalization = self.tile_size // 2 if multiplier % 2 == 0 else 0
+        normalization = self.tile_size // 2 if multiplier % 2 == 1 else 0
         bind_x = x - x % self.tile_size + normalization
         bind_y = y - y % self.tile_size + normalization
         return bind_x, bind_y
