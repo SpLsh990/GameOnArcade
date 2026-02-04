@@ -375,7 +375,7 @@ class GameView(BaseView):
                     if group == "Factory" or group == "Drill":
                         savedata['obj'][group].append((obj.center_x, obj.center_y, obj.hp, obj.building_type))
                     elif group == "Wall":
-                        savedata['obj'][group].append((obj.center_x, obj.center_y, obj.material))
+                        savedata['obj'][group].append((obj.center_x, obj.center_y, obj.building_type))
                     elif group == "Base":
                         savedata['obj'][group].append((obj.center_x, obj.center_y, obj.hp))
                     elif group == "Conveyor":
