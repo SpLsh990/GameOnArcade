@@ -97,20 +97,63 @@ class TabView(BaseView):
         self.create_inventory_layout()
 
     def create_fabrics_items(self):
-        """СЮДА ВОТКНЕШЬ СВОЙ АЛГОРИТМ ЗАГРУЗКИ"""
-        fabric1 = CustomButton(100, 100, "smelter", 0.1, 0.1, self.game_view.textures["iron"])
-        fabric1.center_x, fabric1.center_y = self.width // 2, self.height // 2
-        fabric1.on_click = lambda event: self.item_triggered(event, fabric1.texture_normal)
-        fabric2 = CustomButton(100, 100, 'concentrator', 0.1, 0.1, self.game_view.textures['uranium'])
-        fabric2.center_x, fabric2.center_y = self.width // 2 - 100, self.height // 2
-        fabric2.on_click = lambda event: self.item_triggered(event, fabric2.texture_normal)
-        wall1 = CustomButton(100, 100, "copper_wall", 0.1, 0.1, self.game_view.textures['copper_wall'])
-        wall1.center_x, wall1.center_y = self.width // 2, self.height // 2
-        wall1.on_click = lambda event: self.item_triggered(event, wall1.texture_normal)
-
-        self.walls_manager.add(wall1)
+        fabric1 = CustomButton(100, 100, "Smelter", 0.1, 0.1, self.game_view.textures["smelter"])
+        fabric1.center_x, fabric1.center_y = self.width // 2 - 150, self.height // 2
+        fabric1.on_click = lambda event: self.item_triggered(self.game_view.textures["smelter"], type='smelter')
         self.fabrics_manager.add(fabric1)
+
+        fabric2 = CustomButton(100, 100, 'Концентратор', 0.1, 0.1, self.game_view.textures['concentrator'])
+        fabric2.center_x, fabric2.center_y = self.width // 2, self.height // 2
+        fabric2.on_click = lambda event: self.item_triggered(self.game_view.textures['concentrator'], type='concentrator')
         self.fabrics_manager.add(fabric2)
+
+        fabric3 = CustomButton(100, 100, 'Press', 0.1, 0.1, self.game_view.textures['press'])
+        fabric3.center_x, fabric3.center_y = self.width // 2 + 150, self.height // 2
+        fabric3.on_click = lambda event: self.item_triggered(self.game_view.textures['press'], type='press')
+        self.fabrics_manager.add(fabric3)
+
+        wall1 = CustomButton(100, 100, 'Copper wall', 0.1, 0.1, self.game_view.textures['copper_wall'])
+        wall1.center_x, wall1.center_y = self.width // 2 - 225, self.height // 2
+        wall1.on_click = lambda event: self.item_triggered(self.game_view.textures['copper_wall'], type='copper')
+        self.walls_manager.add(wall1)
+
+        wall2 = CustomButton(100, 100, 'Iron wall', 0.1, 0.1, self.game_view.textures['iron_wall'])
+        wall2.center_x, wall2.center_y = self.width // 2 - 75, self.height // 2
+        wall2.on_click = lambda event: self.item_triggered(self.game_view.textures['iron_wall'], type='iron')
+        self.walls_manager.add(wall2)
+
+        wall3 = CustomButton(100, 100, 'titanium wall', 0.1, 0.1, self.game_view.textures['titanium_wall'])
+        wall3.center_x, wall3.center_y = self.width // 2 + 75, self.height // 2
+        wall3.on_click = lambda event: self.item_triggered(self.game_view.textures['titanium_wall'],
+                                                           type='titanium')
+        self.walls_manager.add(wall3)
+
+        wall4 = CustomButton(100, 100, 'Steel wall', 0.1, 0.1, self.game_view.textures['steel_wall'])
+        wall4.center_x, wall4.center_y = self.width // 2 + 225, self.height // 2
+        wall4.on_click = lambda event: self.item_triggered(self.game_view.textures['steel_wall'], type='steel')
+        self.walls_manager.add(wall4)
+
+        drill1 = CustomButton(100, 100, 'Copper drill', 0.1, 0.1, self.game_view.textures['copper_drill'])
+        drill1.center_x, drill1.center_y = self.width // 2 - 150, self.height // 2
+        drill1.on_click = lambda event: self.item_triggered(self.game_view.textures['copper_drill'],
+                                                            type='copper')
+        self.drills_manager.add(drill1)
+
+        drill2 = CustomButton(100, 100, 'Steel drill', 0.1, 0.1, self.game_view.textures['steel_drill'])
+        drill2.center_x, drill2.center_y = self.width // 2, self.height // 2
+        drill2.on_click = lambda event: self.item_triggered(self.game_view.textures['steel_drill'], type='steel')
+        self.drills_manager.add(drill2)
+
+        drill3 = CustomButton(100, 100, 'Lazer drill', 0.1, 0.1, self.game_view.textures['lazer_drill'])
+        drill3.center_x, drill3.center_y = self.width // 2 - 150, self.height // 2
+        drill3.on_click = lambda event: self.item_triggered(self.game_view.textures['lazer_drill'], type='lazer')
+        self.drills_manager.add(drill3)
+
+        conveyor1 = CustomButton(100, 100, 'conveyor', 0.1, 0.1, self.game_view.textures['conveyor'])
+        conveyor1.center_x, conveyor1.center_y = self.width // 2 + 150, self.height // 2
+        conveyor1.on_click = lambda event: self.item_triggered(self.game_view.textures['conveyor'],
+                                                               direction=(1, 0))
+        self.conveyors_manager.add(conveyor1)
 
     def create_inventory_layout(self):
         if self.inventory_created:
@@ -125,6 +168,8 @@ class TabView(BaseView):
             ("iron", "iron_item"),
             ("lithium", "lithium_item"),
             ("titanium", "titanium_item"),
+            ("steel", "steel_plate"),
+            ("graphite", "graphite"),
             ("uranium", "uranium_item"),
             ("water", "water_item"),
             ("energy", "energy")
@@ -293,22 +338,32 @@ class TabView(BaseView):
         self.is_radial = False
         self.create_inventory_layout()
 
-    def item_triggered(self, event, texture):
+    def item_triggered(self, texture, **kwargs):
         x, y = self.width // 2, self.height // 2
 
         if self.is_fabrics:
-            self.game_view.building = Factory(sprite=texture, x=x, y=y, hp=100, building_type="smelter",
+            self.game_view.building = Factory(texture, x=x, y=y, hp=100, building_type=kwargs['type'],
                                               tile_size=self.game_view.tile_size)
         elif self.is_conveyors:
-            self.game_view.building = Conveyor(sprite=texture, x=x, y=y, hp=100, direction=(0, 0),
+            self.game_view.building = Conveyor(texture, x=x, y=y, hp=100, direction=kwargs['direction'],
                                                tile_size=self.game_view.tile_size)
         elif self.is_drills:
-            self.game_view.building = Drill(sprite=texture, x=x, y=y, hp=100, building_type="copper", world=self.game_view.map,
+            self.game_view.building = Drill(texture, x=x, y=y, hp=100, building_type=kwargs['type'],
+                                            world=self.game_view.map,
                                             tile_size=self.game_view.tile_size)
         elif self.is_walls:
-            self.game_view.building = Wall(sprite=texture, x=x, y=y, material="copper",
-                                           tile_size=self.game_view.tile_size)
-        self.exit_triggered()
+            self.game_view.building = Wall(texture, x=x, y=y, building_type=kwargs['type'], tile_size=self.game_view.tile_size)
+
+        self.radial_manager.disable()
+        self.fabrics_manager.disable()
+        self.conveyors_manager.disable()
+        self.electricity_manager.disable()
+        self.drills_manager.disable()
+        self.turrets_manager.disable()
+        self.walls_manager.disable()
+        self.inventory_manager.disable()
+
+        self.window.show_view(self.game_view)
 
     def exit_triggered(self):
         self.is_radial = True

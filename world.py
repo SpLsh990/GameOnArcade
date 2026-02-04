@@ -69,7 +69,6 @@ class World:
         for y in range(start_y, end_y, self.tile_size):
             for x in range(start_x, end_x, self.tile_size):
                 self.world[(x, y)] = "stone"
-                print(self.world[(x, y)])
 
     def create_world(self):
         self.add_bioms()
