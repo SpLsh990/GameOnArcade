@@ -7,6 +7,7 @@ class BaseView(arcade.View):
         super().__init__()
         self.window = window
         self.manager = UIManager()
+        self.delta_time = 1/60
 
     def on_draw(self):
         self.manager.draw()
