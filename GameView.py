@@ -7,6 +7,7 @@ from baseView import BaseView
 from TabView import TabView
 from CustomButton import CustomButton
 from classes import *
+from datetime import date
 
 
 class GameView(BaseView):
@@ -54,19 +55,31 @@ class GameView(BaseView):
         if 'obj' not in self.data:
             self.data['obj'] = {}
 
-        object_types = ['Base', 'Factory', 'Drill', 'Conveyor', 'Wall', 'Turret']
-        for obj_type in object_types:
-            if obj_type not in self.data['obj']:
-                self.data['obj'][obj_type] = arcade.SpriteList()
-        self.data['obj']['Base'].append(Base(self.textures['core'], 95, 95, 100, self.tile_size))
+            object_types = ['Base', 'Factory', 'Drill', 'Conveyor', 'Wall', 'Turret']
+            for obj_type in object_types:
+                if obj_type not in self.data['obj']:
+                    self.data['obj'][obj_type] = arcade.SpriteList()
+            self.data['obj']['Base'].append(Base(self.textures['core'], 95, 95, 100, self.tile_size))
 
-        if 'resources' not in self.data:
-            self.data['resources'] = {
-                'coal': 0, 'copper': 0, 'iron': 0, 'lithium': 0,
-                'titanium': 0, 'uranium': 0, 'water': 0, 'energy': 0, 'graphite': 0, 'steel_plate': 0
-            }
-        self.data['obj']['Base'][0].storage = self.data['resources']
+            if 'resources' not in self.data:
+                self.data['resources'] = {
+                    'coal': 0, 'copper': 0, 'iron': 0, 'lithium': 0,
+                    'titanium': 0, 'uranium': 0, 'water': 0, 'energy': 0, 'graphite': 0, 'steel_plate': 0
+                }
+            self.data['obj']['Base'][0].storage = self.data['resources']
+        else:
+            for group in self.data['obj']:
+                data = self.data['obj'][group]
+                self.data['obj'][group] = arcade.SpriteList()
 
+                for obj in data:
+                    if group == "Factory":
+                        self.data['obj'][group].append(Factory(self.textures[obj[3]], obj[0], obj[1], obj[2], obj[3]))
+                    elif group == "Drill":
+                        self.data['obj'][group].append(Drill(self.textures[f"{obj[3]}_drill"], obj[0], obj[1], obj[2], self.map))
+                    elif gruop == "Wall":
+                        self.data['obj'][group].append(Wall())
+    #TODO ДОПИШИ ЗДЕСЬ ПО АНАЛОГИИ ОСТАЛЬНЫЕ КЛАССЫ
     def load_textures(self):
         world_textures = {
             "coal": arcade.load_texture("sprites/world/coal.png"),
@@ -305,3 +318,21 @@ class GameView(BaseView):
         bind_x = x - x % self.tile_size + normalization
         bind_y = y - y % self.tile_size + normalization
         return bind_x, bind_y
+
+    def save(self):
+        self.data['date'] = str(date.today())
+        savedata = self.data.copy()
+        savedata['obj'] = []
+        with open(f"saves/{self.data.get('name')}.json", "w", encoding="utf-8") as js, open(
+                f"saves/{self.data.get('name')}.sv", "wb") as bn:
+            for group in self.data['obj'].keys():
+                for obj in self.data['obj'][group]:
+                    if group == "Factory" or group == "Drill":
+                        savedata['obj'][group].append((obj.center_x, obj.center_y, obj.hp, obj.building_type))
+                    elif group == "Wall":
+                        savedata['obj'][group].append((obj.center_x, obj.center_y, obj.material))
+                    elif group == "Base":
+                        savedata['obj'][group].append((obj.center_x, obj.center_y, obj.hp))
+
+            json.dump(savedata, file, indent=4, ensure_ascii=False)
+            pickle.dump(savedata, file)

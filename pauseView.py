@@ -5,7 +5,6 @@ import json
 import pickle
 import time
 from random import randint
-from datetime import date
 from CustomButton import CustomButton
 
 
@@ -59,12 +58,7 @@ class PauseView(BaseView):
         self.window.show_view(self.window.game_view)
 
     def exit_triggered(self, event):
-        self.data = self.window.game_view.data
-        self.data['date'] = str(date.today())
-        with open(f"saves/{self.data.get('name')}.json", "w", encoding="utf-8") as file:
-            json.dump(self.data, file, indent=4, ensure_ascii=False)
-        with open(f"saves/{self.data.get('name')}.sv", "wb") as file:
-            pickle.dump(self.data, file)
+        self.window.game_view.save()
         self.window.is_game = False
         self.window.show_view(self.window.menu_view)
 

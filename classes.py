@@ -53,15 +53,15 @@ class Factory(BaseObject):
         self.multiplier = 2
         scale = 1 / 160 * tile_size
         """Задается тип постройки"""
-        if type == "smelter":
+        if building_type == "smelter":
             self.energy_cost = 15
             self.inp = ["iron", 1.5]  # предмет на вход и нужное количество
             self.out = ["steel", 1]  # предмет на выход и его количество в секунду
-        elif type == "concentrator":
+        elif building_type == "concentrator":
             self.energy_cost = 20
             self.inp = ["uranium", 2]
             self.out = ["enriched_uranium", 0.5]
-        elif type == "press":
+        elif building_type == "press":
             self.energy_cost = 10
             self.inp = ["coal", 1]
             self.out = ["graphite", 0.5]
@@ -140,13 +140,13 @@ class Drill(BaseObject):
         self.multiplier = 2
         scale = 1 / 160 * tile_size
         self.out = []
-        if type == "copper":
+        if building_type == "copper":
             self.can_mining = ["copper", "iron", "coal", "lithium"]
             self.mining_speed = 0.5
-        elif type == "steel":
+        elif building_type == "steel":
             self.can_mining = ["copper", "iron", "coal", "titanium", "lithium"]
             self.mining_speed = 1
-        elif type == "lazer":
+        elif building_type == "lazer":
             self.can_mining = ["copper", "iron", "coal", "titanium", "lithium", "uranium"]
             self.mining_speed = 2
         l = []
